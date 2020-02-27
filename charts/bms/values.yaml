@@ -1,0 +1,11 @@
+# Default values for bms.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+serviceAccount:
+  # The name of the ServiceAccount to use (Default: bms.name)
+  #name: bms
+  # The ClusterRole to bind this ServiceAccount to
+  clusterRole: cluster-reader
+  # Annotations to add to the service account
+  annotations: {}
