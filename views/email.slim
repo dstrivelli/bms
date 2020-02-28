@@ -20,7 +20,9 @@ html
         padding: 0px 5px;
       }
   body
-    h1 Node Information
+    h1 Kubernetes Nodes
     == partial :table, { table: results[:nodes] }
-    h1 Restarts
+    h1 Unhealthy Pods
+    == partial :table, { table: results[:unhealthy_pods] }
+    h1 Pod Restarts
     == partial :table, { table: results[:pod_restarts] }

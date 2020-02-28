@@ -4,11 +4,11 @@
   table
     tr
       - table.first.keys.each do |heading|
-        td = heading.titleize
+        td = display_heading(heading)
     - table.each do |elem|
       tr
         - elem.each do |k,v|
           - v = v.join(', ') if v.is_a? Array
           td = display_value(k, v)
 - else
-  p There is no data available.
+  p There are no results to this query.

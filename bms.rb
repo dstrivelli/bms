@@ -11,12 +11,10 @@ require_relative 'helpers'
 
 # Some ActiveSupport helpers
 require 'active_support/core_ext/enumerable'
-require 'active_support/core_ext/hash/indifferent_access'
-require 'active_support/core_ext/hash/keys'
-require 'active_support/core_ext/string/inflections'
+#require 'active_support/core_ext/hash/keys'
 
 # Variables
-results = ActiveSupport::HashWithIndifferentAccess.new
+results = OpenStruct.new
 site_path = "http://prod8-prometheus-operator-prometheus.monitoring.svc.prod8:9090"
 
 # Setup connection to Kubernetes
@@ -57,12 +55,12 @@ node_arr = nodes.map { |x| x[:metadata][:name] }
 
 cpu_saturation = lambda do |n|
   rtn = single_value[%Q[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})]]
-  return rtn.to_f.round(2)
+  return rtn.to_f * 100
 end
 
 mem_saturation = lambda do |n|
   rtn = single_value[%Q[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
-  return rtn.to_f.round(2)
+  return rtn.to_f * 100
 end
 
 results[:nodes] = nodes.map do |node|
@@ -70,7 +68,7 @@ results[:nodes] = nodes.map do |node|
     name: node[:metadata][:name],
     statuses: node[:status][:conditions].select {|c| c[:status] == 'True'}.map {|x| x[:type]},
     cpu_allocation_percent: cpu_saturation[node[:metadata][:name]],
-    mem_allocation_percent: mem_saturation[node[:metadata][:name]],
+    ram_allocation_percent: mem_saturation[node[:metadata][:name]],
   }
 end
 
