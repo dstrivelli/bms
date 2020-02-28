@@ -1,0 +1,14 @@
+/ This partial will render a table for the pasted variable
+/ We expect that @table is an array of hashes with the keys being the column headers
+- unless table.empty?
+  table
+    tr
+      - table.first.keys.each do |heading|
+        td = heading.titleize
+    - table.each do |elem|
+      tr
+        - elem.each do |k,v|
+          - v = v.join(', ') if v.is_a? Array
+          td = display_value(k, v)
+- else
+  p There is no data available.

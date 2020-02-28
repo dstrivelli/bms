@@ -1,0 +1,26 @@
+doctype html
+html
+  head
+    title Health Check Report
+    css:
+      ul {
+        margin: 0px;
+        list-style-type: none;
+      }
+      li {
+        margin: 0px;
+      }
+      table, th, td {
+        border: 1px solid black;
+      }
+      th {
+        text-align: left;
+      }
+      th, td {
+        padding: 0px 5px;
+      }
+  body
+    h1 Node Information
+    == partial :table, { table: results[:nodes] }
+    h1 Restarts
+    == partial :table, { table: results[:pod_restarts] }

@@ -2,12 +2,18 @@
 
 require 'kubeclient'
 require 'lp'
+require 'mail'
 require 'prometheus/api_client'
 require 'pry'
+require 'slim'
+
+require_relative 'helpers'
 
 # Some ActiveSupport helpers
 require 'active_support/core_ext/enumerable'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'active_support/core_ext/hash/keys'
+require 'active_support/core_ext/string/inflections'
 
 # Variables
 results = ActiveSupport::HashWithIndifferentAccess.new
@@ -41,52 +47,70 @@ multi_value = lambda { |query, name| q[query]['result'].map { |x| { name: x['met
 fields_query = lambda { |query, fields| q[query]['result'].map { |x| x['metric'].slice(*fields.map{|y| y.to_s}) } }
 enum_query = lambda { |query, values| values.map { |v| { name: v, value: single_value[query % {value: v}]} } }
 
-binding.pry
-
 # Get nodes
-
-nodes = fields_query['kube_node_info', [:node]].map { |x| x['node'] }
+nodes = kube.get_nodes selector: '!node-role.kubernetes.io/master'
+node_arr = nodes.map { |x| x[:metadata][:name] }
 
 ###
 # Kubernetes Node Information
 ###
 
-# Check node cpu allocation
-qry = %q[sum(kube_pod_container_resource_requests_cpu_cores{node="%{value}"}) / sum(kube_node_status_allocatable_cpu_cores{node="%{value}"})]
-results[:node_cpu_allocation] = {
-  title: 'Nodes with high CPU allocation',
-  filter: '> 0.75',
-  values: enum_query[qry, nodes],
-}
+cpu_saturation = lambda do |n|
+  rtn = single_value[%Q[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})]]
+  return rtn.to_f.round(2)
+end
 
-# Check node memory allocation
-qry = %q{sum(kube_pod_container_resource_requests_memory_bytes{node="%{value}"}) / sum(kube_node_status_allocatable_memory_bytes{node="%{value}"})}
-results[:node_mem_allocation] = {
-  title: 'Nodes with high memory allocation',
-  filter: '> 0.75',
-  values: enum_query[qry, nodes],
-}
+mem_saturation = lambda do |n|
+  rtn = single_value[%Q[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
+  return rtn.to_f.round(2)
+end
+
+results[:nodes] = nodes.map do |node|
+  {
+    name: node[:metadata][:name],
+    statuses: node[:status][:conditions].select {|c| c[:status] == 'True'}.map {|x| x[:type]},
+    cpu_allocation_percent: cpu_saturation[node[:metadata][:name]],
+    mem_allocation_percent: mem_saturation[node[:metadata][:name]],
+  }
+end
 
 ###
 # Kubernetes Pod Info
 ###
 
-# Pods that are in state != [Ready, Completed]
-qry = 'kube_pod_status_phase{phase!~"(Completed|Succeeded|Running)"}'
-results[:pods_unready] = {
-  title: "Unready pods",
-  values: fields_query[qry, [:pod, :phase]]
-}
+results[:unhealthy_pods] = kube.get_pods(field_selector: 'status.phase!=Running,status.phase!=Succeeded').map do |p|
+  {
+    name: p[:metadata][:name],
+    namespace: p[:metadata][:namespace],
+    status: p[:status][:phase],
+  }
+end
 
 # Pods that have restarted in the past 24h
 qry = 'floor(delta(kube_pod_container_status_restarts_total[24h])) != 0'
-results[:pod_restarts] = {
-  title: "Pods that have restarted in the past 24h",
-  values: multi_value[qry, :pod],
-}
+results[:pod_restarts] = multi_value[qry, :pod]
 
 # Nodes with high load (5m?)
 # Deployments with mismatching requested v ready
 
-binding.pry
+# Render HTML for email
+context = Context.new
+context[:results] = results
+html = Slim::Template.new('views/email.slim', pretty: true).render(context)
+
+mail = Mail.new do
+  from 'do_not_reply@va.gov'
+  to 'alexander.loy@va.gov'
+  subject "[BMS] Daily Health Report - #{Time.now.strftime('%Y-%m-%d')}"
+  html_part do
+    content_type 'text/html; charset=UTF-8'
+    body html
+  end
+end
+mail.delivery_method :smtp, address: 'localhost', port: '1025'
+mail.deliver
+
+#binding.pry
 #lp results
+#require 'yaml'
+#puts results.deep_transform_keys(&:to_s).to_yaml
