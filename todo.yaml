@@ -1,0 +1,2 @@
+tasks:
+- item: Rewrite Dockerfile to use a smaller base image (ruby:2.7.0-slim)
