@@ -109,7 +109,7 @@ end
 # Render HTML for report
 context = Context.new
 context[:results] = results
-html = Slim::Template.new('views/email.slim', pretty: true).render(context)
+html = Slim::Template.new('views/report.slim', pretty: true).render(context)
 
 case options[:output]
 when :email

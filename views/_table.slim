@@ -4,7 +4,7 @@
   table
     tr
       - table.first.keys.each do |heading|
-        td = display_heading(heading)
+        th = display_heading(heading)
     - table.each do |elem|
       tr
         - elem.each do |k,v|
