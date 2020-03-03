@@ -12,24 +12,49 @@ require_relative 'helpers'
 
 # Some ActiveSupport helpers
 require 'active_support/core_ext/enumerable'
+require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/hash/keys'
 
-options = { output: :email, debug: false }
+# Set defaults values
+options = {
+  debug: false,
+  email_addresses: ['alexander.loy@va.gov', 'jeffrey.jensen2@va.gov'],
+  outfile: 'report.html',
+  infile: nil,
+  output: :email,
+  smtp: 'smtp.va.gov',
+  smtp_port: 25,
+}.with_indifferent_access
+
+# Set values from ENV variables
+options.each {|k,v| options[k] = ENV.fetch("BMS_#{k.upcase}", v) }
+
+# Get values from command line switches
 OptionParser.new do |opts|
   opts.banner = "Usage: #{0} [options]"
   opts.on('-d', '--debug', 'Turn on debug mode.') { options[:debug] = true }
-  opts.on('-n', '--in FILE', 'Use yaml FILE instead of polling.') { |filename| options[:in] = filename }
+  opts.on('-e', '--email addr1,addr2,etc', Array, 'Comma separated list of email addresses.') do |e|
+    options[:email_addresses] = e
+  end
+  opts.on('-f', '--file FILE', 'Save output report to FILE.') {|f| options[:outfile] = f }
+  opts.on('-i', '--in FILE', 'Use yaml FILE instead of polling.') {|f| options[:infile] = f }
   opts.on('-o', '--out [TYPE]', ['email', 'file', 'screen'], 'Where to send the report.') do |o|
     options[:output] = o.to_sym
   end
+  opts.on('--smtp SMTPSERVER', "Use SMTPSERVER instead of #{options[:smtp]}") {|s| options[:smtp] = s }
+  opts.on('--smtp_port PORT', "Use PORT for SMTP connection.") {|p| options[:smtp_port] = p }
 end.parse!
+
+if options[:debug]
+  puts "[DEBUG] Options = #{options}"
+end
 
 # Variables
 results = OpenStruct.new
 site_path = "http://prod8-prometheus-operator-prometheus.monitoring.svc.prod8:9090"
 
-if options.has_key? :in
-  results = YAML.load(File.read(options[:in])).deep_transform_keys(&:to_sym)
+if options[:infile]
+  results = YAML.load(File.read(options[:infile])).deep_transform_keys(&:to_sym)
 else
   # Setup connection to Kubernetes
   secrets_dir = ENV['TELEPRESENCE_ROOT'].nil? ? '' : ENV['TELEPRESENCE_ROOT']
@@ -99,12 +124,54 @@ else
   end
 
   # Pods that have restarted in the past 24h
-  qry = 'floor(delta(kube_pod_container_status_restarts_total[24h])) != 0'
+  qry = 'floor(delta(kube_pod_container_status_restarts_total[24h])) > 0'
   results[:pod_restarts] = multi_value[qry, :pod]
 
   # Nodes with high load (5m?)
   # Deployments with mismatching requested v ready
 end
+
+### URI check statuses
+def fetch_uri(uri)
+  uri = URI(uri)
+  http = Net::HTTP.new(uri.host, uri.port)
+  if uri.scheme == 'https'
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  end
+  http.get(uri.path)
+end
+
+uris = {
+  # IDM
+  # Fluentd
+  api_server: 'https://api.prod8.bip.va.gov/healthz',
+  dex: 'http://dex.auth:5556/healthz',
+  elastic_search: {
+    uri: 'http://prod8-elasticsearch-client.logging:9200/_cluster/health',
+    result_type: :json,
+    result_value: 'status'
+  },
+  grafana: 'http://prod8-grafana.monitoring/api/health',
+  kibana: 'http://prod8-kibana.logging:443/status',
+}
+results[:uris] = []
+# TODO: This part seriously needs some error handling
+uris.each do |name, values|
+  values = { uri: values } if values.is_a? String
+  resp = fetch_uri values[:uri]
+  results[:uris] << case values.fetch(:result_type, :response_code)
+    when :json
+      json = JSON.parse(resp.body)
+      { name: name.to_s, uri: values[:uri], result: json[values[:result_value]] }
+    when :response_code
+      { name: name.to_s, uri: values[:uri], result: "#{resp.code} #{resp.message}" }
+    else
+      { name: name.to_s, uri: values[:uri], result: 'ERROR: Invalid result_type.' }
+  end
+end
+
+binding.pry if options[:debug]
 
 # Render HTML for report
 context = Context.new
@@ -115,21 +182,18 @@ case options[:output]
 when :email
   mail = Mail.new do
     from 'do_not_reply@va.gov'
-    to 'alexander.loy@va.gov'
+    to options[:email_addresses].join(',')
     subject "[BMS] Daily Health Report - #{Time.now.strftime('%Y-%m-%d')}"
     html_part do
       content_type 'text/html; charset=UTF-8'
       body html
     end
   end
-  if options[:debug]
-    mail.delivery_method :smtp, address: 'localhost', port: '1025'
-  else
-    mail.delivery_method :smtp, address: 'smtp.va.gov', port: '25'
-  end
+  mail.delivery_method :smtp, address: options[:smtp], port: options[:smtp_port]
   mail.deliver
 when :file
-  File.open('report.html', 'w') do |f|
+  # TODO: Verify we aren't clobbering an existing file
+  File.open(options[:outfile], 'w') do |f|
     f.puts html
   end
 when :screen

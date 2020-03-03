@@ -6,4 +6,4 @@ COPY . /app
 WORKDIR /app
 RUN bundle install
 
-CMD ["bms.rb"]
+CMD ["/app/bms.rb"]
