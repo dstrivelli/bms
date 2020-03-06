@@ -1,0 +1,131 @@
+doctype html
+html
+  head
+    title BIP Monitoring System
+    css:
+      body {
+        font-family: "Lucida Grande", Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.25em;
+        color: #444444;
+        background-color: #FAFAFA;
+        max-width: 990px;
+        padding: 0 20px;
+        margin: 0 auto;
+      }
+      h1, h2, h3, h4, h5 {
+        font-family: Georgia, "bitstream vera serif", serif;
+        margin: 40px 0 20px 0;
+        color: #222222;
+        line-height: 1.5em;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      #wrapper {
+        clear: both;
+        display: block;
+        float: left;
+        margin-left: 0;
+        width: 100%;
+      }
+      #header {
+        margin: 10px 0px;
+        overflow: hidden;
+        text-align: center;
+      }
+      #header h1 {
+        margin: 20px 0 10px 0;
+      }
+      #header .caption {
+        font-family: Georgia;
+        font-style: oblique;
+      }
+      #content {
+        margin: 0px 25px 25px 25px;
+      }
+      ul {
+        margin: 0px;
+        list-style-type: none;
+      }
+      li {
+        margin: 0px;
+      }
+      #content table {
+        width: 100%;
+      }
+      table, th, td {
+        border: 1px solid black;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        background-color: darkseagreen;
+      }
+      td {
+        background-color: aliceblue;
+      }
+      th, td {
+        padding: 0px 5px;
+      }
+      .meter {
+	      height: 20px;  /* Can be anything */
+        width: 50px;
+        position: relative;
+	      background: #555;
+	      box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+      }
+      .meter .bar {
+        height: 100%;
+        background-color: rgb(43,194,83);
+        background-image: linear-gradient(
+          center bottom,
+          rgb(43,194,83) 37%,
+          rgb(84,240,84) 69%
+        );
+        box-shadow:
+          inset 0 2px 9px  rgba(255,255,255,0.3),
+          inset 0 -2px 6px rgba(0,0,0,0.4);
+          position: relative;
+          overflow: hidden;
+      }
+      .orange .bar {
+        background-color: #f1a165;
+        background-image: linear-gradient(to bottom, #f1a165, #f36d0a);
+      }
+      .red .bar {
+        background-color: #f0a3a3;
+        background-image: linear-gradient(to bottom, #f0a3a3, #f42323);
+      }
+      .icon {
+        height: 50px;
+        width: 50px;
+      }
+      #footer {
+        margin-bottom: 20px;
+      }
+      #links {
+        margin: 0px 25px;
+      }
+      #links a {
+        color: #3f3f3f;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0px 5px;
+      }
+  body
+    #wrapper
+      #header
+        h1 = @header ? @header : 'BIP Monitoring System'
+        - if @caption
+          .caption = @caption
+        hr
+        #links
+          a href="/result/latest" latest
+          a href="/results/" list
+      #content
+        == yield
+      #footer
+        hr

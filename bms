@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+$: << File.join(__dir__, 'lib')
+
+require 'daybreak'
+require 'json'
+#require 'logger'
+require 'sinatra'
+
+require 'bms/helpers'
+require 'bms/result'
+
+get '/' do
+  redirect "/result/latest"
+end
+
+get '/result/:timestamp' do
+  # TODO: Validate input
+  db = Daybreak::DB.new '/tmp/bms.db'
+  @result = db[params[:timestamp]]
+  db.close
+  @header = "BMS Health Report"
+  @caption = Time.at(@result[:timestamp]).to_s
+  slim :result
+end
+
+get '/results/' do
+  db = Daybreak::DB.new '/tmp/bms.db'
+  @results = db[:runs].reverse
+  db.close
+  slim :results
+end
+
+get '/health' do
+  health = {
+    status: 'green',
+    last_refresh: Time.now.strftime("%Y-%m-%d %H:%M:%S")
+  }
+  JSON.generate(health)
+end

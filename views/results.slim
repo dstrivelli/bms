@@ -1,0 +1,7 @@
+- if @results.empty?
+  p There are no results in the database.
+- else
+  ul
+    - @results.each do |result|
+      li
+        a href="/result/#{result}" = Time.at(result).to_s
