@@ -57,10 +57,10 @@ html
       }
   body
     h1 Kubernetes Nodes
-    == partial :table, { table: results[:nodes] }
+    == slim :table, locals: { table: result[:nodes] }
     h1 Unhealthy Pods
-    == partial :table, { table: results[:unhealthy_pods] }
+    == slim :table, locals: { table: result[:unhealthy_pods] }
     h1 Pod Restarts
-    == partial :table, { table: results[:pod_restarts] }
+    == slim :table, locals: { table: result[:pod_restarts] }
     h1 URIs
-    == partial :table, { table: results[:uris] }
+    == slim :table, locals: { table: result[:uris] }

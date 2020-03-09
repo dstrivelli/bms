@@ -129,48 +129,48 @@ else
 
   # Nodes with high load (5m?)
   # Deployments with mismatching requested v ready
-end
 
-### URI check statuses
-def fetch_uri(uri)
-  uri = URI(uri)
-  http = Net::HTTP.new(uri.host, uri.port)
-  if uri.scheme == 'https'
-    http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  ### URI check statuses
+  def fetch_uri(uri)
+    uri = URI(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    if uri.scheme == 'https'
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
+    http.get(uri.path)
   end
-  http.get(uri.path)
-end
 
-uris = {
-  # IDM
-  # Fluentd
-  api_server: 'https://api.prod8.bip.va.gov/healthz',
-  dex: 'http://dex.auth:5556/healthz',
-  elastic_search: {
-    uri: 'http://prod8-elasticsearch-client.logging:9200/_cluster/health',
-    result_type: :json,
-    result_value: 'status'
-  },
-  grafana: 'http://prod8-grafana.monitoring/api/health',
-  kibana: 'http://prod8-kibana.logging:443/status',
-}
-results[:uris] = []
-# TODO: This part seriously needs some error handling
-uris.each do |name, values|
-  values = { uri: values } if values.is_a? String
-  resp = fetch_uri values[:uri]
-  results[:uris] << case values.fetch(:result_type, :response_code)
-    when :json
-      json = JSON.parse(resp.body)
-      { name: name.to_s, uri: values[:uri], result: json[values[:result_value]] }
-    when :response_code
-      { name: name.to_s, uri: values[:uri], result: "#{resp.code} #{resp.message}" }
-    else
-      { name: name.to_s, uri: values[:uri], result: 'ERROR: Invalid result_type.' }
+  uris = {
+    # IDM
+    # Fluentd
+    api_server: 'https://api.prod8.bip.va.gov/healthz',
+    dex: 'http://dex.auth:5556/healthz',
+    elastic_search: {
+      uri: 'http://prod8-elasticsearch-client.logging:9200/_cluster/health',
+      result_type: :json,
+      result_value: 'status'
+    },
+    grafana: 'http://prod8-grafana.monitoring/api/health',
+    kibana: 'http://prod8-kibana.logging:443/status',
+  }
+  results[:uris] = []
+  # TODO: This part seriously needs some error handling
+  uris.each do |name, values|
+    values = { uri: values } if values.is_a? String
+    resp = fetch_uri values[:uri]
+    results[:uris] << case values.fetch(:result_type, :response_code)
+      when :json
+        json = JSON.parse(resp.body)
+        { name: name.to_s, uri: values[:uri], result: json[values[:result_value]] }
+      when :response_code
+        { name: name.to_s, uri: values[:uri], result: "#{resp.code} #{resp.message}" }
+      else
+        { name: name.to_s, uri: values[:uri], result: 'ERROR: Invalid result_type.' }
+    end
   end
-end
 
+end
 binding.pry if options[:debug]
 
 # Render HTML for report

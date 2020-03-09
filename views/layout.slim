@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title BIP Monitoring System
+    meta charset="utf-8"
+    link rel="stylesheet" media="screen" href="/css/styles.css"
+    script src="/jquery-3.4.1.min.js"
+    script src="/scripts.js"
+  body
+    #wrapper
+      #header
+        h1 = @header ? @header : 'BIP Monitoring System'
+        - if @caption
+          .caption = @caption
+        hr
+        #links
+          a href="/result/latest" latest
+          a href="/results/" list
+      #content
+        == yield
+      #footer
+        hr

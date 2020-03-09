@@ -16,8 +16,8 @@
             - elsif v >= 75
               - colour = 'orange'
             td
-              .meter class="#{colour}"
-                .bar style="width:#{v.to_s(:percentage, precision: 0)}"
+              .meter
+                .bar class="#{colour}" style="width:#{v.to_s(:percentage, precision: 0)}"
               = display_value(k, v)
           - else
             td = display_value(k, v)

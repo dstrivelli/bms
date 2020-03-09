@@ -1,0 +1,3 @@
+keep_results: 10
+worker:
+  sleep: 30
