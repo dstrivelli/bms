@@ -4,4 +4,4 @@
   ul
     - @results.each do |result|
       li
-        a href="/result/#{result}" = Time.at(result).to_s
+        a.timestamp time=result href="/result/#{result}" = Time.at(result).strftime('%B %e, %Y %l:%M%P')

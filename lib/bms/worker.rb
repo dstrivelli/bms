@@ -46,47 +46,6 @@ module BMS
       end
     end
 
-    def init_kubernetes
-      # Setup connection to Kubernetes
-      @log.info 'Initializing connection to Kubernetes.'
-      secrets_dir = ENV['TELEPRESENCE_ROOT'].nil? ? '' : ENV['TELEPRESENCE_ROOT']
-      secrets_dir = File.join(secrets_dir, '/var/run/secrets/kubernetes.io/serviceaccount/')
-      auth_options = {
-        bearer_token_file: File.join(secrets_dir, 'token')
-      }
-      ssl_options = {}
-      if File.exists? File.join(secrets_dir, 'ca.crt')
-        ssl_options[:ca_file] = File.join(secrets_dir, 'ca.crt')
-      end
-      @kubectl = Kubeclient::Client.new(
-        'https://kubernetes.default.svc',
-        'v1',
-        auth_options: auth_options,
-        ssl_options: ssl_options
-      )
-      #namespace = File.read File.join(secrets_dir, 'namespace')
-      @log.info 'Connection to Kubernetes established.'
-    end
-
-    def init_prometheus
-      # Setup connection to Prometheus
-      @log.info 'Initializing connection to Prometheus.'
-      @prom = Prometheus::ApiClient.client(url: Settings.prometheus.url)
-      @log.info 'Connection to Prometheus established.'
-    end
-
-    def fetch_uri(uri)
-      # Get HTTP response from URI
-      @log.debug "fetch_uri: fetching #{uri}"
-      uri = URI(uri)
-      http = Net::HTTP.new(uri.host, uri.port)
-      if uri.scheme == 'https'
-        http.use_ssl = true
-        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      end
-      http.get(uri.path)
-    end
-
     def refresh
       results = Result.new
 
@@ -155,7 +114,7 @@ module BMS
           next
         end
         resp = fetch_uri values[:uri]
-        results[:uris] << case values.fetch(:result_type, :response_code).to_sym
+        results[:uris] << case values.fetch(:type, :response_code).to_sym
           when :json
             json = JSON.parse(resp.body)
             {
@@ -189,5 +148,48 @@ module BMS
       end
       results
     end
-  end
+
+    private
+
+    def init_kubernetes
+      # Setup connection to Kubernetes
+      @log.info 'Initializing connection to Kubernetes.'
+      secrets_dir = ENV['TELEPRESENCE_ROOT'].nil? ? '' : ENV['TELEPRESENCE_ROOT']
+      secrets_dir = File.join(secrets_dir, '/var/run/secrets/kubernetes.io/serviceaccount/')
+      auth_options = {
+        bearer_token_file: File.join(secrets_dir, 'token')
+      }
+      ssl_options = {}
+      if File.exists? File.join(secrets_dir, 'ca.crt')
+        ssl_options[:ca_file] = File.join(secrets_dir, 'ca.crt')
+      end
+      @kubectl = Kubeclient::Client.new(
+        'https://kubernetes.default.svc',
+        'v1',
+        auth_options: auth_options,
+        ssl_options: ssl_options
+      )
+      #namespace = File.read File.join(secrets_dir, 'namespace')
+      @log.info 'Connection to Kubernetes established.'
+    end
+
+    def init_prometheus
+      # Setup connection to Prometheus
+      @log.info 'Initializing connection to Prometheus.'
+      @prom = Prometheus::ApiClient.client(url: Settings.prometheus.url)
+      @log.info 'Connection to Prometheus established.'
+    end
+
+    def fetch_uri(uri)
+      # Get HTTP response from URI
+      @log.debug "fetch_uri: fetching #{uri}"
+      uri = URI(uri)
+      http = Net::HTTP.new(uri.host, uri.port)
+      if uri.scheme == 'https'
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
+      http.get(uri.path)
+    end
+  end # #Worker
 end

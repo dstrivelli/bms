@@ -16,6 +16,7 @@ Config.setup do |config|
   config.env_prefix = 'BMS'
   config.env_separator = '__'
 end
-Config.load_and_set_settings(Config.setting_files(File.join(__dir__, 'config'), 'production'))
+env = ENV.fetch('APP_ENV', 'development')
+Config.load_and_set_settings(Config.setting_files(File.join(__dir__, 'config'), env))
 
 worker = BMS::Worker.new

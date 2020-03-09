@@ -2,6 +2,7 @@
 
 $: << File.join(__dir__, 'lib')
 
+require 'config'
 require 'daybreak'
 require 'json'
 #require 'logger'
@@ -9,6 +10,13 @@ require 'sinatra'
 
 require 'bms/helpers'
 require 'bms/result'
+
+set :root, File.dirname(__FILE__)
+register Config
+
+get '/css/styles.css' do
+  scss :styles
+end
 
 get '/' do
   redirect "/result/latest"

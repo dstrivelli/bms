@@ -1,9 +1,11 @@
 FROM ruby:2.7.0
 MAINTAINER zan.loy@gmail.com
 
-RUN gem install bundler
+EXPOSE 5000
+
+RUN gem install bundler foreman
 COPY . /app
 WORKDIR /app
 RUN bundle install
 
-CMD ["/app/bms.rb"]
+CMD ["foreman", "start"]

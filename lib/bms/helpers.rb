@@ -31,8 +31,8 @@ module Sinatra
       end
     end
 
-    def display_array(name, value)
-      display_string(name, value.join(', '))
+    def display_array(name, value, delimiter = ', ')
+      display_string(name, value.join(delimiter))
     end
 
     def display_string(name, value)
