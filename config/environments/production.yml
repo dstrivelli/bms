@@ -14,6 +14,12 @@ email:
   whitelist:
     - /.*@bah\.com/
     - /.*@va\.gov/
+  distro:
+    to:
+      - E_BIP_Platform_Prod_HealthCheck@bah.com
+    cc:
+      - alexander.loy@va.gov
+      - jeffrey.jensen2@va.gov
   smtp:
     host: smtp.va.gov
     port: 25

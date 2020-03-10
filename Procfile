@@ -1,3 +1,3 @@
 web: ./bms
-worker: ./worker.rb
-debug: ruby -e "require 'lp'; lp ENV.to_h"
+worker: ./worker
+#debug: ruby -e "require 'lp'; lp ENV.to_h"

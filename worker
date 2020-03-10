@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+# Add lib dir to path
+$: << File.join(__dir__, 'lib')
+$stdout.sync = true
+
+require 'config'
+require 'daybreak'
+require 'fileutils'
+require 'pry'
+
+require 'bms/worker'
+
+pid_file = '/tmp/bms_worker.pid'
+if File.exists? pid_file
+  puts 'Only one instance of worker can run at a time.'
+  puts 'If this in error, remove ' + pid_file
+  exit 1
+else
+  File.open(pid_file, 'w') {|f| f.write Process.pid}
+end
+
+begin
+  # Load settings
+  Config.setup do |config|
+    config.use_env = true
+    config.env_prefix = 'BMS'
+    config.env_separator = '__'
+  end
+  env = ENV.fetch('APP_ENV', 'development')
+  Config.load_and_set_settings(Config.setting_files(File.join(__dir__, 'config'), env))
+  # Start worker
+  worker = BMS::Worker.new
+rescue SignalException => e
+  case e.signm
+  when 'SIGHUP'
+    retry if e.signm == 'SIGHUP'
+  when 'SIGINT'
+    puts 'INTERRUPTED'
+  else
+    raise
+  end
+ensure
+  FileUtils.rm(pid_file, force: true)
+end

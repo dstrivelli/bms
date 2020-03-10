@@ -1,3 +1,5 @@
+require 'daybreak'
+
 require 'sinatra/base'
 
 module Sinatra
@@ -14,6 +16,41 @@ module Sinatra
       inflect.acronym 'URL'
       inflect.acronym 'URLs'
       inflect.acronym 'RAM'
+    end
+
+    def get_result(timestamp)
+      db = Daybreak::DB.new '/tmp/bms.db'
+      begin
+        db[timestamp]
+      ensure
+        db.close
+      end
+    end
+
+    def get_results
+      db = Daybreak::DB.new '/tmp/bms.db'
+      begin
+        db[:runs].reverse
+      ensure
+        db.close
+      end
+    end
+
+    def worker_pid
+      begin
+        pid = File.read('/tmp/bms_worker.pid')
+      rescue
+        nil
+      end
+    end
+
+    def worker_running?
+      pid = worker_pid
+      if pid
+        (Process.getpgid(pid) rescue nil).present?
+      else
+        false
+      end
     end
 
     def display_heading(name)
