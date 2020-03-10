@@ -1,3 +1,9 @@
+email:
+  distro:
+    to: 'alexander.loy@va.gov'
+  smtp:
+    host: 'localhost'
+    port: 1025
 keep_results: 10
 worker:
   sleep: 30

@@ -6,3 +6,7 @@ $(document).ready(function() {
     this.text = d.toLocaleString("en-US");
   });
 });
+
+function process_alert(result) {
+  alert(result);
+}
