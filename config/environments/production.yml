@@ -1,6 +1,6 @@
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
-  consul: http://prod9-consul.vault:8500/v1/status/leader
+  consul: http://prod8-consul.vault:8500/v1/status/leader
   dex: http://dex.auth:5556/healthz
   elastic_search:
     uri: http://prod8-elasticsearch-client.logging:9200/_cluster/health
