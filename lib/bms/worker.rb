@@ -120,7 +120,7 @@ module BMS
             {
               name: name.to_s,
               uri: values[:uri],
-              result: json[values[:result_value]]
+              result: json[values[:value]]
             }
           when :response_code
             {
