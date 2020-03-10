@@ -1,4 +1,3 @@
-debug: false
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod9-consul.vault:8500/v1/status/leader
@@ -7,11 +6,12 @@ uris:
     uri: http://prod8-elasticsearch-client.logging:9200/_cluster/health
     type: json
     value: status
+  idm: https://idm.prod.bip.va.gov/ipa/ui/
   grafana: http://prod8-grafana.monitoring/api/health
   kibana: http://prod8-kibana.logging:443/status
   vault: http://prod8-vault.vault:8200/v1/sys/health?standbyok
 email:
-  approved:
+  whitelist:
     - /.*@bah\.com/
     - /.*@va\.gov/
   smtp:
@@ -19,5 +19,7 @@ email:
     port: 25
 prometheus:
   url: http://prod8-prometheus-operator-prometheus.monitoring.svc.prod8:9090
+results:
+  retain: 100
 worker:
   sleep: 1800

@@ -1,3 +1,4 @@
-keep_results: 10
+results:
+  retain: 10
 worker:
   sleep: 30
