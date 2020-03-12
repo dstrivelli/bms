@@ -26,4 +26,4 @@ docker push container-registry.prod8.bip.va.gov/bms:<version>
 ```
 
 Now you should be able to verify the image is in the registry by visiting
-[https://nexus.prod8.bip.va.gov/].
+https://nexus.prod8.bip.va.gov/.

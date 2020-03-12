@@ -4,10 +4,11 @@ require 'kubeclient'
 require 'logger'
 require 'prometheus/api_client'
 
-require_relative 'result'
+require 'bms'
+require 'bms/result'
 
 module BMS
-  class Worker
+ class Worker
     attr_reader :last_result
 
     def initialize
@@ -31,6 +32,7 @@ module BMS
             @log.info "Completed refresh in #{elapsed.real.round(2)} seconds."
           rescue StandardError => msg
             @log.error "Error trying to run data refresh: #{msg}"
+            raise
           end
           begin
             sleep_for = Settings.worker.sleep
@@ -69,9 +71,21 @@ module BMS
         return rtn.to_f * 100
       end
 
+      cpu_utilization = lambda do |n|
+        cpu_alloc = @kubectl.get_node(n)[:status][:allocatable][:cpu]
+        cpu_used  = @kubectl_metrics.get_entity('nodes', n)[:usage][:cpu]
+        (BMS.convert_cores(cpu_used) / BMS.convert_cores(cpu_alloc)) * 100
+      end
+
       mem_saturation = lambda do |n|
         rtn = single_value[%Q[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
         return rtn.to_f * 100
+      end
+
+      ram_utilization = lambda do |n|
+        ram_alloc = @kubectl.get_node(n)[:status][:allocatable][:memory]
+        ram_used = @kubectl_metrics.get_entity('nodes', n)[:usage][:memory]
+        (BMS.convert_ram(ram_used) / BMS.convert_ram(ram_alloc)) * 100
       end
 
       results[:nodes] = nodes.map do |node|
@@ -80,6 +94,8 @@ module BMS
           statuses: node[:status][:conditions].select {|c| c[:status] == 'True'}.map {|x| x[:type]},
           cpu_allocation_percent: cpu_saturation[node[:metadata][:name]],
           ram_allocation_percent: mem_saturation[node[:metadata][:name]],
+          cpu_utilization_percent: cpu_utilization[node[:metadata][:name]],
+          ram_utilization_percent: ram_utilization[node[:metadata][:name]],
         }
       end
 
@@ -123,10 +139,15 @@ module BMS
               result: json[values[:value]]
             }
           when :response_code
+            if values[:response_codes] and values[:response_codes][resp.code.to_sym]
+              msg = values[:response_codes][resp.code.to_sym]
+            else
+              msg = resp.message
+            end
             {
               name: name.to_s,
               uri: values[:uri],
-              result: "#{resp.code} #{resp.message}"
+              result: "#{resp.code} #{msg}"
             }
           else
             {
@@ -169,6 +190,12 @@ module BMS
         auth_options: auth_options,
         ssl_options: ssl_options
       )
+      @kubectl_metrics = Kubeclient::Client.new(
+        'https://kubernetes.default.svc/apis/metrics.k8s.io',
+        'v1beta1',
+        auth_options: auth_options,
+        ssl_options: ssl_options
+      )
       #namespace = File.read File.join(secrets_dir, 'namespace')
       @log.info 'Connection to Kubernetes established.'
     end
@@ -184,12 +211,18 @@ module BMS
       # Get HTTP response from URI
       @log.debug "fetch_uri: fetching #{uri}"
       uri = URI(uri)
-      http = Net::HTTP.new(uri.host, uri.port)
-      if uri.scheme == 'https'
-        http.use_ssl = true
-        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      begin
+        http = Net::HTTP.new(uri.host, uri.port)
+        if uri.scheme == 'https'
+          http.use_ssl = true
+          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+        http.get(uri.path)
+      rescue Net::HTTPRequestTimeOut
+        Net::HTTPResponse.new('', 408, 'TIMEDOUT')
+      rescue SocketError
+        Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
       end
-      http.get(uri.path)
     end
-  end # #Worker
-end
+  end # BMS::Worker
+end # BMS

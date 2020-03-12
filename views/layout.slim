@@ -3,6 +3,7 @@ html
   head
     title BIP Monitoring System
     meta charset="utf-8"
+    link rel="stylesheet" media="screen" href="/css/reset.css"
     link rel="stylesheet" media="screen" href="/css/styles.css"
     script src="/jquery-3.4.1.min.js"
     script src="/scripts.js"
@@ -13,9 +14,12 @@ html
         - if @caption
           .caption = @caption
         hr
-        #links
-          a href="/result/latest" latest
-          a href="/results" list
+        .flex-list
+          ul
+            li
+              a href="/result/latest" latest
+            li
+              a href="/results" list
       #content
         == yield
       #footer

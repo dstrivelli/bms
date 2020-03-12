@@ -8,8 +8,17 @@ uris:
     type: json
     value: status
   grafana: http://prod8-grafana.monitoring/api/health
+  idm: https://idm.prod.bip.va.gov/ipa/ui/
   kibana: http://prod8-kibana.logging:443/status
-  vault: http://prod8-vault.vault:8200/v1/sys/health?standbyok
+  vault:
+    uri: http://prod8-vault.vault:8200/v1/sys/health?standbyok
+    type: response_code
+    response_codes:
+      429: STANDBY
+      472: RECOVERY MODE
+      473: PERFORMANCE STANDBY
+      501: UNINITIALIZED
+      503: SEALED
 email:
   approved:
     - /.*@bah\.com/

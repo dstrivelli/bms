@@ -4,6 +4,11 @@ require 'rake'
 
 require 'bms/version'
 
+desc 'Test'
+task :hello do
+  puts 'Hello!'
+end
+
 desc 'Build docker image'
 task :build do
   puts 'Building local docker image...'
@@ -25,4 +30,10 @@ task :push do
   else
     puts 'Error!'
   end
+end
+
+desc 'Run docker bms for testing'
+task :run do
+  system("docker run --name bms -it bms:#{BMS::VERSION} /bin/sh")
+  system("docker rm bms")
 end

@@ -17,6 +17,7 @@ if development?
 end
 
 register Config
+set :port, 5000
 
 get '/css/styles.css' do
   scss :styles
@@ -47,19 +48,23 @@ post '/email' do
   html = Roadie::Document.new(slim(:result, layout: :layout_email))
   html.add_css(scss(:styles))
 
-  mail = Mail.new do
-    from 'do_not_reply@va.gov'
-    to to
-    cc cc if defined?(cc)
-    subject subject
-    html_part do
-      content_type 'text/html; charset=UTF-8'
-      body html.transform
-    end
-    delivery_method :smtp, address: Settings.email.smtp.host, port: Settings.email.smtp.port
-  end.deliver
-
-  "Email sent"
+  begin
+    mail = Mail.new do
+      from 'do_not_reply@va.gov'
+      to to
+      cc cc if defined?(cc)
+      subject subject
+      html_part do
+        content_type 'text/html; charset=UTF-8'
+        body html.transform
+      end
+      delivery_method :smtp, address: Settings.email.smtp.host, port: Settings.email.smtp.port
+    end.deliver
+  rescue
+    "There was an error while attempting to send the email."
+  else
+    "Email sent"
+  end
 end
 
 post '/reload' do

@@ -31,15 +31,11 @@ begin
   Config.load_and_set_settings(Config.setting_files(File.join(__dir__, 'config'), env))
   # Start worker
   worker = BMS::Worker.new
+rescue Interrupt
+  puts 'INTERRUPTED'
 rescue SignalException => e
-  case e.signm
-  when 'SIGHUP'
-    retry if e.signm == 'SIGHUP'
-  when 'SIGINT'
-    puts 'INTERRUPTED'
-  else
-    raise
-  end
+  retry if e.signm == 'SIGHUP'
+  raise
 ensure
   FileUtils.rm(pid_file, force: true)
 end

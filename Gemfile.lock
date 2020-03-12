@@ -1,5 +1,5 @@
 GEM
-  remote: https://rubygems.org/
+  remote: http://rubygems.org/
   specs:
     activesupport (6.0.2.1)
       concurrent-ruby (~> 1.0, >= 1.0.2)
@@ -10,6 +10,9 @@ GEM
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
     backports (3.17.0)
+    binding_of_caller (0.8.0)
+      debug_inspector (>= 0.0.1)
+    byebug (11.1.1)
     coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.1.6)
@@ -19,6 +22,7 @@ GEM
     css_parser (1.7.1)
       addressable
     daybreak (0.3.0)
+    debug_inspector (0.0.3)
     deep_merge (1.2.1)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
@@ -74,11 +78,13 @@ GEM
     http-accept (1.7.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    http-form_data (2.2.0)
+    http-form_data (2.3.0)
     http-parser (1.2.1)
       ffi-compiler (>= 1.0, < 2.0)
     i18n (1.8.2)
       concurrent-ruby (~> 1.0)
+    interception (0.5)
+    json (2.3.0)
     kubeclient (4.6.0)
       http (>= 3.0, < 5.0)
       recursive-open-struct (~> 1.0, >= 1.0.4)
@@ -105,17 +111,24 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    pry-nav (0.3.0)
-      pry (>= 0.9.10, < 0.13.0)
+    pry-byebug (3.8.0)
+      byebug (~> 11.0)
+      pry (~> 0.10)
     pry-remote (0.1.8)
       pry (~> 0.9)
       slop (~> 3.0)
+    pry-rescue (1.5.0)
+      interception (>= 0.5)
+      pry (>= 0.12.0)
+    pry-stack_explorer (0.4.9.3)
+      binding_of_caller (>= 0.7)
+      pry (>= 0.9.11)
     public_suffix (4.0.3)
     rack (2.2.2)
     rack-protection (2.0.8.1)
       rack
     rake (13.0.1)
-    recursive-open-struct (1.1.0)
+    recursive-open-struct (1.1.1)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
@@ -151,7 +164,6 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.6)
-    yaml (0.1.0)
     zeitwerk (2.3.0)
 
 PLATFORMS
@@ -162,22 +174,24 @@ DEPENDENCIES
   colorize
   config
   daybreak
+  json
   kubeclient
   lp
   mail
   prometheus-api-client
   pry
-  pry-nav
+  pry-byebug
   pry-remote
+  pry-rescue
+  pry-stack_explorer
   roadie
   sassc
   sinatra
   sinatra-contrib
   slim
-  yaml
 
 RUBY VERSION
-   ruby 2.7.0p0
+   ruby 2.6.5p114
 
 BUNDLED WITH
-   2.1.2
+   2.1.4

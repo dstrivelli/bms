@@ -60,6 +60,7 @@ module Sinatra
     end
 
     def display_value(name, value)
+      name = name.to_s
       method_name = "display_#{value.class.name.downcase}"
       if self.respond_to? method_name
         self.send(method_name, name, value)
@@ -86,7 +87,7 @@ module Sinatra
     end
     alias_method :display_integer, :display_number
     alias_method :display_float, :display_number
-  end
+  end # Sinatra::BMS_Helpers
 
   helpers BMS_Helpers
-end
+end # Sinatra
