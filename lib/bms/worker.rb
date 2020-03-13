@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'benchmark'
 require 'daybreak'
 require 'kubeclient'
@@ -8,7 +10,8 @@ require 'bms'
 require 'bms/result'
 
 module BMS
- class Worker
+  # Class for BMS::Worker to run infinite loop gathering data.
+  class Worker
     attr_reader :last_result
 
     def initialize
@@ -18,21 +21,19 @@ module BMS
       @last_result = nil
       # Init Connections
       @db = Daybreak::DB.new '/tmp/bms.db'
-      unless @db[:runs].is_a? Array
-        @db[:runs] = []
-      end
-      init_kubernetes
-      init_prometheus
       # Start the main loop
       begin
+        @db[:runs] = [] unless @db[:runs].is_a? Array
+        init_kubernetes
+        init_prometheus
         loop do # TODO: Add some error handling here
           begin
             @log.info 'Refreshing result data.'
-            elapsed = Benchmark.measure { @last_result = self.refresh }
+            elapsed = Benchmark.measure { @last_result = refresh }
             @log.info "Completed refresh in #{elapsed.real.round(2)} seconds."
-          rescue StandardError => msg
-            @log.error "Error trying to run data refresh: #{msg}"
-            raise
+          rescue StandardError => e
+            @log.error "Error trying to run data refresh: #{e}"
+            raise if Settings.env == 'development'
           end
           begin
             sleep_for = Settings.worker.sleep
@@ -52,22 +53,21 @@ module BMS
       results = Result.new
 
       # Setup some helper lambdas
-      q = lambda { |query| @prom.query(query: query) }
-      single_value = lambda { |query| q[query]['result'].first['value'].last }
-      multi_value = lambda { |query, name| q[query]['result'].map { |x| { name: x['metric'][name.to_s], value: x['value'].last } } }
-      fields_query = lambda { |query, fields| q[query]['result'].map { |x| x['metric'].slice(*fields.map{|y| y.to_s}) } }
-      enum_query = lambda { |query, values| values.map { |v| { name: v, value: single_value[query % {value: v}]} } }
+      q = ->(query) { @prom.query(query: query) }
+      single_value = ->(query) { q[query]['result'].first['value'].last }
+      multi_value = ->(query, name) { q[query]['result'].map { |x| { name: x['metric'][name.to_s], value: x['value'].last } } }
+      # fields_query = ->(query, fields) { q[query]['result'].map { |x| x['metric'].slice(*fields.map(&:to_s)) } }
+      # enum_query = ->(query, values) { values.map { |v| { name: v, value: single_value[query % { value: v }] } } }
 
       # Get nodes
       nodes = @kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
-      node_arr = nodes.map { |x| x[:metadata][:name] }
 
       ###
       # Kubernetes Node Information
       ###
 
       cpu_saturation = lambda do |n|
-        rtn = single_value[%Q[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})]]
+        rtn = single_value[%[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})]]
         return rtn.to_f * 100
       end
 
@@ -78,8 +78,8 @@ module BMS
       end
 
       mem_saturation = lambda do |n|
-        rtn = single_value[%Q[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
-        return rtn.to_f * 100
+        rtn = single_value[%[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
+        rtn.to_f * 100
       end
 
       ram_utilization = lambda do |n|
@@ -89,13 +89,18 @@ module BMS
       end
 
       results[:nodes] = nodes.map do |node|
+        name = node[:metadata][:name]
+        conditions = node[:status][:conditions].select do |condition|
+          condition[:status] == 'True'
+        end
+        conditions.map! { |condition| condition[:type] }
         {
-          name: node[:metadata][:name],
-          statuses: node[:status][:conditions].select {|c| c[:status] == 'True'}.map {|x| x[:type]},
-          cpu_allocation_percent: cpu_saturation[node[:metadata][:name]],
-          ram_allocation_percent: mem_saturation[node[:metadata][:name]],
-          cpu_utilization_percent: cpu_utilization[node[:metadata][:name]],
-          ram_utilization_percent: ram_utilization[node[:metadata][:name]],
+          name: name,
+          conditions: conditions,
+          cpu_allocation_percent: cpu_saturation[name],
+          ram_allocation_percent: mem_saturation[name],
+          cpu_utilization_percent: cpu_utilization[name],
+          ram_utilization_percent: ram_utilization[name]
         }
       end
 
@@ -103,11 +108,13 @@ module BMS
       # Kubernetes Pod Info
       ###
 
-      results[:unhealthy_pods] = @kubectl.get_pods(field_selector: 'status.phase!=Running,status.phase!=Succeeded').map do |p|
+      results[:unhealthy_pods] = @kubectl.get_pods(
+        field_selector: 'status.phase!=Running,status.phase!=Succeeded'
+      ).map do |p|
         {
           name: p[:metadata][:name],
           namespace: p[:metadata][:namespace],
-          status: p[:status][:phase],
+          status: p[:status][:phase]
         }
       end
 
@@ -119,50 +126,50 @@ module BMS
       # Deployments with mismatching requested v ready
 
       results[:uris] = []
-      # TODO: This part seriously needs some error handling
       Settings.uris.each do |name, values|
         case values
         when Config::Options
-          values = values.to_hash
+          values = values.to_h
+        when Hash
+          nil
         when String
           values = { uri: values }
         else
+          @log.warn "Failed to parse URI. values.class == #{values.class}"
           next
         end
+        values.default = {} # This helps us with nested lookup key errors
         resp = fetch_uri values[:uri]
         results[:uris] << case values.fetch(:type, :response_code).to_sym
-          when :json
-            json = JSON.parse(resp.body)
-            {
-              name: name.to_s,
-              uri: values[:uri],
-              result: json[values[:value]]
-            }
-          when :response_code
-            if values[:response_codes] and values[:response_codes][resp.code.to_sym]
-              msg = values[:response_codes][resp.code.to_sym]
-            else
-              msg = resp.message
-            end
-            {
-              name: name.to_s,
-              uri: values[:uri],
-              result: "#{resp.code} #{msg}"
-            }
-          else
-            {
-              name: name.to_s,
-              uri: values[:uri],
-              result: 'ERROR: Invalid result_type.'
-            }
-        end
+                          when :json
+                            json = JSON.parse(resp.body)
+                            {
+                              name: name.to_s,
+                              uri: values[:uri],
+                              result: json[values[:value]]
+                            }
+                          when :response_code
+                            msg = values[:response_codes][resp.code.to_sym] ||
+                                  resp.message
+                            {
+                              name: name.to_s,
+                              uri: values[:uri],
+                              result: "#{resp.code} #{msg}"
+                            }
+                          else
+                            {
+                              name: name.to_s,
+                              uri: values[:uri],
+                              result: 'ERROR: Invalid result_type.'
+                            }
+                          end
       end
       results[:timestamp] = Time.now.to_i
       # Done grabbing results
       @db.lock do
-        @log.debug { "Current @db[:runs] = #{@db[:runs].to_s}" }
+        @log.debug { "Current @db[:runs] = #{@db[:runs]}" }
         @db[:runs] = @db[:runs].append(results[:timestamp])
-        @log.debug { "After addition @db[:runs] = #{@db[:runs].to_s}" }
+        @log.debug { "After addition @db[:runs] = #{@db[:runs]}" }
         @db[results[:timestamp]] = results
         @db[:latest] = @db[results[:timestamp]]
         @db.flush
@@ -175,28 +182,29 @@ module BMS
     def init_kubernetes
       # Setup connection to Kubernetes
       @log.info 'Initializing connection to Kubernetes.'
-      secrets_dir = ENV['TELEPRESENCE_ROOT'].nil? ? '' : ENV['TELEPRESENCE_ROOT']
-      secrets_dir = File.join(secrets_dir, '/var/run/secrets/kubernetes.io/serviceaccount/')
+      k8_uri = 'https://kubernetes.default.svc'
+      secrets_dir = File.join(
+        ENV.fetch('TELEPRESENCE_ROOT', ''),
+        '/var/run/secrets/kubernetes.io/serviceaccount/'
+      )
       auth_options = {
         bearer_token_file: File.join(secrets_dir, 'token')
       }
-      ssl_options = {}
-      if File.exists? File.join(secrets_dir, 'ca.crt')
-        ssl_options[:ca_file] = File.join(secrets_dir, 'ca.crt')
-      end
+      ssl_options = {
+        ca_file: File.join(secrets_dir, 'ca.crt')
+      }
       @kubectl = Kubeclient::Client.new(
-        'https://kubernetes.default.svc',
+        k8_uri,
         'v1',
         auth_options: auth_options,
         ssl_options: ssl_options
       )
       @kubectl_metrics = Kubeclient::Client.new(
-        'https://kubernetes.default.svc/apis/metrics.k8s.io',
+        "#{k8_uri}/apis/metrics.k8s.io",
         'v1beta1',
         auth_options: auth_options,
         ssl_options: ssl_options
       )
-      #namespace = File.read File.join(secrets_dir, 'namespace')
       @log.info 'Connection to Kubernetes established.'
     end
 
@@ -224,5 +232,7 @@ module BMS
         Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
       end
     end
-  end # BMS::Worker
-end # BMS
+    # BMS::Worker
+  end
+  # BMS
+end

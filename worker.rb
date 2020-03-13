@@ -1,23 +1,29 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Add lib dir to path
-$: << File.join(__dir__, 'lib')
+$LOAD_PATH << File.join(__dir__, 'lib')
 $stdout.sync = true
 
 require 'config'
 require 'daybreak'
 require 'fileutils'
-require 'pry'
-
 require 'bms/worker'
 
+# Try to load Pry if it's available
+begin
+  require 'pry'
+rescue LoadError
+  nil
+end
+
 pid_file = '/tmp/bms_worker.pid'
-if File.exists? pid_file
+if File.exist? pid_file
   puts 'Only one instance of worker can run at a time.'
   puts 'If this in error, remove ' + pid_file
   exit 1
 else
-  File.open(pid_file, 'w') {|f| f.write Process.pid}
+  File.open(pid_file, 'w') { |f| f.write Process.pid }
 end
 
 begin
@@ -28,9 +34,13 @@ begin
     config.env_separator = '__'
   end
   env = ENV.fetch('APP_ENV', 'development')
-  Config.load_and_set_settings(Config.setting_files(File.join(__dir__, 'config'), env))
+  Config.load_and_set_settings(
+    Config.setting_files(File.join(__dir__, 'config'), env)
+  )
+  Settings.env = env
+
   # Start worker
-  worker = BMS::Worker.new
+  BMS::Worker.new
 rescue Interrupt
   puts 'INTERRUPTED'
 rescue SignalException => e

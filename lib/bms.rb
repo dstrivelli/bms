@@ -1,14 +1,17 @@
+# frozen_string_literal: true
+
 require 'bms/result'
 
+# The default namespace for BMS
 module BMS
   CPU_ORDERS_OF_MAGNITUDE = {
     m: 1000,
-    n: 1000000000,
+    n: 1_000_000_000
   }.freeze
 
   RAM_ORDERS_OF_MAGNITUDE = {
     Ki: 1000,
-    Mi: 1000000,
+    Mi: 1_000_000
   }.freeze
 
   def self.convert_cores(cores)
@@ -30,4 +33,4 @@ module BMS
       count.round(2)
     end
   end
-end # BMS   
+end # BMS

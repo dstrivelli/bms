@@ -1,10 +1,12 @@
-#$: << File.join(__dir__, 'lib')
+# frozen_string_literal: true
+
+# $LOAD_PATH << File.join(__dir__, 'lib')
 # require 'bms'
 
 Pry.config.exception_handler = proc do |output, exception, _pry_|
-  output.puts "#{exception}"
-  filtered = exception.backtrace.select {|line| line.include? 'bms' }
-  output.puts "#{filtered.first}"
+  output.puts exception.to_s
+  filtered = exception.backtrace.select { |line| line.include? 'bms' }
+  output.puts filtered.first.to_s
 end
 
 Pry::Commands.block_command 'zan', 'Echo current line', interpolate: false do
@@ -18,10 +20,10 @@ Pry::Commands.block_command 'zan', 'Echo current line', interpolate: false do
 
   text = File.readlines(file)[line - 1]
   eval_string.replace(text.chomp(''))
-  #run "fix-indent"
-  #run "show-input"
+  # run "fix-indent"
+  # run "show-input"
 
-  #binding.irb
+  # binding.irb
 end
 
 # vim:ft=ruby

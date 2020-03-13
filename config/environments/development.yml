@@ -1,3 +1,4 @@
+log_level: DEBUG
 email:
   distro:
     to: 'alexander.loy@va.gov'

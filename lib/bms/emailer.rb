@@ -1,17 +1,18 @@
+# frozen_string_literal: true
+
 require 'mail'
 require 'slim'
-
 require 'bms/result'
 
 module BMS
+  # Module for sending emails in BMS
   module Emailer
-    def self.send(result:, template:, to: [], cc: [])
-      to = [to] if to.is_a? String
-      cc = [cc] if cc.is_a? String
+    def self.send(result:, template:, email_to: [], email_cc: [])
+      to = [email_to] if email_to.is_a? String
+      cc = [email_cc] if email_cc.is_a? String
 
       # Render HTML for report
       context = OpenStruct.new({ result: result })
-      binding.remote_pry
       html = Slim::Template.new(template).render(context)
 
       mail = Mail.new do
@@ -27,5 +28,5 @@ module BMS
       mail.delivery_method :smtp, address: 'localhost', port: 1025
       mail.deliver
     end
-  end # Emailer
+  end # BMS::Emailer
 end # BMS

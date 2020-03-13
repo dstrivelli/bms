@@ -1,6 +1,7 @@
 FROM alpine:latest
 MAINTAINER zan.loy@gmail.com
 
+ENV APP_ENV production
 # Per https://bundler.io/guides/bundler_docker_guide.html
 ENV GEM_HOME /usr/local/bundle
 ENV PATH $GEM_HOME/bin:$GEM_HOME/gems/bin:$PATH
@@ -17,10 +18,11 @@ COPY . /app
 WORKDIR /app
 
 # Install deps
-RUN apk add --update ruby ruby-dev zlib-dev build-base && \
-    gem install bundler foreman io-console --no-document && \
+RUN apk add --update --no-cache build-base libstdc++ ruby ruby-dev zlib-dev && \
+    gem install bundler bigdecimal etc foreman io-console webrick --no-document && \
+    bundle config set without 'development test' && \
     bundle install && \
-    apk del --purge ruby-dev zlib-dev build-base && \
+    apk del --purge build-base ruby-dev zlib-dev && \
     rm -rf /var/cache/apk/*
 
 EXPOSE 5000

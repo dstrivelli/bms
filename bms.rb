@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-$: << File.join(__dir__, 'lib')
+$LOAD_PATH << File.join(__dir__, 'lib')
 
 require 'sinatra'
 require 'config'
@@ -24,16 +25,15 @@ get '/css/styles.css' do
 end
 
 get '/' do
-  redirect "/result/latest"
+  redirect '/result/latest'
 end
 
 post '/email' do
-  if params[:id]
-    # TODO: Add 'new' option
-    @result = get_result(params[:id])
-  else
-    @result = get_result(:latest)
-  end
+  @result = if params[:id]
+              get_result(params[:id])
+            else
+              get_result(:latest)
+            end
 
   if params[:to]
     # TODO: Validate email is whitelisted
@@ -49,7 +49,7 @@ post '/email' do
   html.add_css(scss(:styles))
 
   begin
-    mail = Mail.new do
+    Mail.new do
       from 'do_not_reply@va.gov'
       to to
       cc cc if defined?(cc)
@@ -60,33 +60,30 @@ post '/email' do
       end
       delivery_method :smtp, address: Settings.email.smtp.host, port: Settings.email.smtp.port
     end.deliver
-  rescue
-    "There was an error while attempting to send the email."
+  rescue StandardError
+    'There was an error while attempting to send the email.'
   else
-    "Email sent"
+    'Email sent'
   end
 end
 
 post '/reload' do
-  begin
-    Process.kill :SIGHUP, worker_pid
-  rescue
-    'Error!'
-  else
-    'Reloaded!'
-  end
+  Process.kill :SIGHUP, worker_pid
+  'Reloaded!'
+rescue Errno::ESRCH
+  'Error!'
 end
 
 get '/result/:timestamp' do
   # TODO: Validate input
   @result = get_result(params[:timestamp])
-  @header = "BMS Health Report"
+  @header = 'BMS Health Report'
   @caption = Time.at(@result[:timestamp]).to_s
   slim :result
 end
 
 get '/results' do
-  @results = get_results
+  @results = results
   slim :results
 end
 
@@ -100,10 +97,10 @@ get '/health' do
     health[:worker] = 'stopped'
   end
   # Check database status
-  begin
-    health[:last_refresh] = get_result(:latest)[:timestamp]
+  health[:last_refresh] = get_result(:latest)[:timestamp]
+  if health[:last_refresh]
     health[:database] = 'running'
-  rescue
+  else
     health[:status] = 'red'
     health[:database] = 'errored'
   end

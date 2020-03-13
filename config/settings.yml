@@ -1,4 +1,5 @@
 debug: false
+log_level: INFO
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod8-consul.vault:8500/v1/status/leader
@@ -29,4 +30,4 @@ email:
 prometheus:
   url: http://prod8-prometheus-operator-prometheus.monitoring.svc.prod8:9090
 worker:
-  sleep: 30
+  sleep: 300
