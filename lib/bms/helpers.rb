@@ -33,30 +33,30 @@ module Sinatra
     def results
       db = Daybreak::DB.new '/tmp/bms.db'
       begin
-        db[:runs].reverse
+        if db[:runs]
+          db[:runs].reverse
+        else
+          []
+        end
       ensure
         db.close
       end
     end
 
     def worker_pid
-      File.read('/tmp/bms_worker.pid')
-    rescue FileNotFoundException
+      # Validate pid file exists
+      pid = File.read('/tmp/bms_worker.pid').to_i
+      return nil if pid.zero?
+
+      # Validate process is still running
+      Process.getpgid(pid)
+      pid
+    rescue Errno::ENOENT, Errno::ESRCH
       nil
     end
 
     def worker_running?
-      pid = worker_pid
-      if pid
-        begin
-          Process.getpgid(pid)
-          true
-        rescue Errno::ESRCH
-          false
-        end
-      else
-        false
-      end
+      worker_pid ? true : false
     end
 
     def display_heading(name)

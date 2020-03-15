@@ -3,8 +3,11 @@
 $LOAD_PATH << File.join(__dir__, 'lib')
 
 require 'English'
+require 'fileutils'
 require 'rake'
 require 'bms/version'
+
+REMOTE_DOCKER = 'container-registry.prod8.bip.va.gov'
 
 # Setup some embedded tasks
 begin
@@ -21,11 +24,6 @@ begin
 rescue LoadError
 end
 
-desc 'Test'
-task :hello do
-  puts 'Hello!'
-end
-
 desc 'Build docker image'
 task :build do
   # Validate rubocop is clean
@@ -40,6 +38,16 @@ task :build do
     exit 1
   end
 
+  puts 'Building ctags...'
+  `ctags -R`
+
+  puts 'Copying production.yml to helm chart.'
+  FileUtils.copy_file(
+    'config/environments/production.yml',
+    'charts/bms/config/production.yml',
+    preserve: true
+  )
+
   puts 'Building local docker image...'
   status = system("docker image build -t bms:#{BMS::VERSION} .")
   if status
@@ -49,17 +57,22 @@ task :build do
   end
 end
 
-desc 'Push docker image to container-registry.prod8.bip.va.gov'
+desc "Push docker image to #{REMOTE_DOCKER}"
 task :push do
-  status = system("docker tag bms:#{BMS::VERSION} container-registry.prod8.bip.va.gov/bms:#{BMS::VERSION}")
+  puts "Tagging bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}:#{BMS::VERSION}"
+  status = system("docker tag bms:#{BMS::VERSION} #{REMOTE_DOCKER}/bms:#{BMS::VERSION}")
   raise unless status
 
-  status = system("docker push container-registry.prod8.bip.va.gov/bms:#{BMS::VERSION}")
+  puts "Pushing bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}:#{BMS::VERSION}"
+  status = system("docker push #{REMOTE_DOCKER}/bms:#{BMS::VERSION}")
   if status
-    puts 'Success!'
+    puts 'Image successfully push!'
   else
-    puts 'Error!'
+    puts 'Image failed to push due to fatal error!'
   end
+
+  puts 'Cleaning up tag'
+  system("docker rmi #{REMOTE_DOCKER}/bms:#{BMS::VERSION}")
 end
 
 desc 'Run docker bms for testing'

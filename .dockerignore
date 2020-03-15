@@ -1,5 +1,9 @@
+Dockerfile
 README.md
 telepresence.log
 todo.yaml
 .git
 .gitignore
+spec
+tags
+charts

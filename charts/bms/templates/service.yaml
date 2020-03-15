@@ -1,0 +1,11 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "bms.name" . }}
+spec:
+  selector:
+    app: {{ include "bms.name" . }}
+  ports:
+  - name: http
+    port: 5000

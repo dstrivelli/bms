@@ -1,0 +1,32 @@
+# Default values for bms.
+# I refuse to do Helm's "best" practice of using camelCase. GFY
+
+clusterrole:
+  name: bms
+
+# Each cronjob needs a unique name.
+# Defaults:
+#   hour: 12
+#   minute: 0
+#   daysofmonth: *
+#   month: *
+#   daysofweek: *
+cronjobs:
+  - name: morning-email
+    daysofweek: 1-5
+    hour: 11 
+    minute: 30
+  - name: evening-email
+    daysofweek: 1-5
+    hour: 20
+
+ingress:
+  enabled: true
+  host: bms.prod8.bip.va.gov
+  tls:
+    enabled: true
+    secretname: bms-tls
+
+serviceaccount:
+  name: bms
+  annotations: {}

@@ -1,33 +1,3 @@
-debug: false
 log_level: INFO
-uris:
-  api_server: https://api.prod8.bip.va.gov/healthz
-  consul: http://prod8-consul.vault:8500/v1/status/leader
-  dex: http://dex.auth:5556/healthz
-  elastic_search:
-    uri: http://prod8-elasticsearch-client.logging:9200/_cluster/health
-    type: json
-    value: status
-  grafana: http://prod8-grafana.monitoring/api/health
-  idm: https://idm.prod.bip.va.gov/ipa/ui/
-  kibana: http://prod8-kibana.logging:443/status
-  vault:
-    uri: http://prod8-vault.vault:8200/v1/sys/health?standbyok
-    type: response_code
-    response_codes:
-      429: STANDBY
-      472: RECOVERY MODE
-      473: PERFORMANCE STANDBY
-      501: UNINITIALIZED
-      503: SEALED
-email:
-  approved:
-    - /.*@bah\.com/
-    - /.*@va\.gov/
-  smtp:
-    host: smtp.va.gov
-    port: 25
-prometheus:
-  url: http://prod8-prometheus-operator-prometheus.monitoring.svc.prod8:9090
-worker:
-  sleep: 300
+keep_results: 5
+uris: {}

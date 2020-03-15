@@ -35,11 +35,7 @@ module BMS
             @log.error "Error trying to run data refresh: #{e}"
             raise if Settings.env == 'development'
           end
-          begin
-            sleep_for = Settings.worker.sleep
-          rescue KeyError
-            sleep_for = 300
-          end
+          sleep_for = Settings.worker.sleep rescue 300 # rubocop:disable Style/RescueModifier
           @log.info("Sleeping for #{sleep_for} seconds...")
           sleep(sleep_for)
         end
@@ -167,9 +163,9 @@ module BMS
       results[:timestamp] = Time.now.to_i
       # Done grabbing results
       @db.lock do
-        @log.debug { "Current @db[:runs] = #{@db[:runs]}" }
+        @log.debug { "Current @db[:runs].count = #{@db[:runs].count}" }
         @db[:runs] = @db[:runs].append(results[:timestamp])
-        @log.debug { "After addition @db[:runs] = #{@db[:runs]}" }
+        @log.debug { "After addition @db[:runs].count = #{@db[:runs].count}" }
         @db[results[:timestamp]] = results
         @db[:latest] = @db[results[:timestamp]]
         @db.flush
@@ -181,8 +177,8 @@ module BMS
 
     def init_kubernetes
       # Setup connection to Kubernetes
-      @log.info 'Initializing connection to Kubernetes.'
-      k8_uri = 'https://kubernetes.default.svc'
+      k8_url = Settings.kubernetes.url rescue 'https://kubernetes.default.svc' # rubocop:disable Style/RescueModifier
+      @log.info "Initializing connection to k8 (#{k8_url})..."
       secrets_dir = File.join(
         ENV.fetch('TELEPRESENCE_ROOT', ''),
         '/var/run/secrets/kubernetes.io/serviceaccount/'
@@ -194,23 +190,23 @@ module BMS
         ca_file: File.join(secrets_dir, 'ca.crt')
       }
       @kubectl = Kubeclient::Client.new(
-        k8_uri,
+        k8_url,
         'v1',
         auth_options: auth_options,
         ssl_options: ssl_options
       )
       @kubectl_metrics = Kubeclient::Client.new(
-        "#{k8_uri}/apis/metrics.k8s.io",
+        URI.join(k8_url, '/apis/metrics.k8s.io'),
         'v1beta1',
         auth_options: auth_options,
         ssl_options: ssl_options
       )
-      @log.info 'Connection to Kubernetes established.'
+      @log.info 'Connection to k8 established.'
     end
 
     def init_prometheus
       # Setup connection to Prometheus
-      @log.info 'Initializing connection to Prometheus.'
+      @log.info 'Initializing connection to Prometheus...'
       @prom = Prometheus::ApiClient.client(url: Settings.prometheus.url)
       @log.info 'Connection to Prometheus established.'
     end

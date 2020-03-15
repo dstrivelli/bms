@@ -1,0 +1,25 @@
+{{ $dot := . }}
+{{ range $k, $v := .Values.cronjobs }}
+---
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: {{ $v.name }}
+  labels:
+    {{- include "bms.labels" $dot | nindent 4 }}
+spec:
+  schedule: {{ include "bms.cronstring" . | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccount: {{ $dot.Values.serviceaccount.name }}
+          restartPolicy: OnFailure
+          containers:
+          - name: curl
+            image: byrnedo/alpine-curl
+            command: ["curl", "-XPOST", '-d', {{ dict "id" "latest" | toJson | quote }}, {{ include "bms.uri" $dot | quote }}]
+{{- end }}

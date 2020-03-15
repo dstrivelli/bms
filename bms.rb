@@ -9,11 +9,11 @@ require 'json'
 require 'mail'
 require 'roadie'
 
+require 'bms'
 require 'bms/helpers'
-require 'bms/result'
 
 if development?
-  require 'sinatra/reloader'
+  # require 'sinatra/reloader'
   require 'pry-remote'
 end
 
@@ -47,6 +47,7 @@ post '/email' do
   # Process html body
   html = Roadie::Document.new(slim(:result, layout: :layout_email))
   html.add_css(scss(:styles))
+  html.add_css('button#email { display: none !important; max-height: 0 !important; overflow: hidden !important; }')
 
   begin
     Mail.new do
@@ -60,7 +61,8 @@ post '/email' do
       end
       delivery_method :smtp, address: Settings.email.smtp.host, port: Settings.email.smtp.port
     end.deliver
-  rescue StandardError
+  rescue StandardError => e
+    logger.error e.to_s
     'There was an error while attempting to send the email.'
   else
     'Email sent'
@@ -76,15 +78,21 @@ end
 
 get '/result/:timestamp' do
   # TODO: Validate input
-  @result = get_result(params[:timestamp])
-  @header = 'BMS Health Report'
-  @caption = Time.at(@result[:timestamp]).to_s
-  slim :result
+  if (@result = get_result(params[:timestamp]))
+    @header = 'BMS Health Report'
+    @caption = Time.at(@result[:timestamp]).strftime('%B %e, %Y %l:%M%P')
+    slim :result
+  else
+    slim 'p No result found.'
+  end
 end
 
 get '/results' do
-  @results = results
-  slim :results
+  if (@results = results)
+    slim :results
+  else
+    slim 'p No results in the database.'
+  end
 end
 
 get '/health' do
