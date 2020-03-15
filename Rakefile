@@ -7,6 +7,9 @@ require 'fileutils'
 require 'rake'
 require 'bms/version'
 
+LOCAL_YAML    = 'config/environments/production.yml'
+HELM_YAML     = 'charts/bms/config/production.yml'
+HELM          = 'helm3'
 REMOTE_DOCKER = 'container-registry.prod8.bip.va.gov'
 
 # Setup some embedded tasks
@@ -42,11 +45,7 @@ task :build do
   `ctags -R`
 
   puts 'Copying production.yml to helm chart.'
-  FileUtils.copy_file(
-    'config/environments/production.yml',
-    'charts/bms/config/production.yml',
-    preserve: true
-  )
+  FileUtils.copy_file(LOCAL_YAML, HELM_YAML, preserve: true)
 
   puts 'Building local docker image...'
   status = system("docker image build -t bms:#{BMS::VERSION} .")
@@ -90,4 +89,16 @@ task :run do
   # Stop and delete the container
   system('docker stop bms')
   system('docker rm bms')
+end
+
+desc 'Deploy latest version via Helm'
+task :deploy do
+  require 'digest'
+  # Verify the production.yml is correct.
+  local_yml = Digest::MD5.hexdigest File.read(LOCAL_YAML)
+  helm_yml = Digest::MD5.hexdigest File.read(HELM_YAML)
+  unless local_yml == helm_yml
+    FileUtils.copy_file(LOCAL_YAML, HELM_YAML, preserve: true)
+  end
+  `#{HELM} upgrade bms charts/bms --namespace=bms`
 end
