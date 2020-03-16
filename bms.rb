@@ -10,6 +10,7 @@ require 'mail'
 require 'roadie'
 
 require 'bms'
+require 'bms/db'
 require 'bms/helpers'
 
 if development?
@@ -17,8 +18,12 @@ if development?
   require 'pry-remote'
 end
 
+# Configure Sinatra
 register Config
 set :port, 5000
+
+# Configure BMS
+BMS::DB.load(Settings.db)
 
 get '/css/styles.css' do
   scss :styles
@@ -105,7 +110,7 @@ get '/health' do
     health[:worker] = 'stopped'
   end
   # Check database status
-  health[:last_refresh] = get_result(:latest)[:timestamp]
+  health[:last_refresh] = BMS::DB.get_result(:latest)[:timestamp]
   if health[:last_refresh]
     health[:database] = 'running'
   else

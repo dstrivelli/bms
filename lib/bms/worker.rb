@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
 require 'benchmark'
-require 'daybreak'
 require 'kubeclient'
 require 'logger'
 require 'prometheus/api_client'
 
 require 'bms'
-require 'bms/result'
 
 module BMS
   # Class for BMS::Worker to run infinite loop gathering data.
@@ -19,11 +17,9 @@ module BMS
       @log.info 'Starting initialization.'
       # Init variables
       @last_result = nil
-      # Init Connections
-      @db = Daybreak::DB.new '/tmp/bms.db'
       # Start the main loop
       begin
-        @db[:runs] = [] unless @db[:runs].is_a? Array
+        # Init Connections
         init_kubernetes
         init_prometheus
         loop do # TODO: Add some error handling here
@@ -41,7 +37,6 @@ module BMS
         end
       ensure
         @log.info 'Shutting down...'
-        @db.close
       end
     end
 
@@ -161,16 +156,9 @@ module BMS
                           end
       end
       results[:timestamp] = Time.now.to_i
+      binding.pry
       # Done grabbing results
-      @db.lock do
-        @log.debug { "Current @db[:runs].count = #{@db[:runs].count}" }
-        @db[:runs] = @db[:runs].append(results[:timestamp])
-        @log.debug { "After addition @db[:runs].count = #{@db[:runs].count}" }
-        @db[results[:timestamp]] = results
-        @db[:latest] = @db[results[:timestamp]]
-        @db.flush
-      end
-      results
+      DB.save_result(results)
     end
 
     private
@@ -228,7 +216,5 @@ module BMS
         Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
       end
     end
-    # BMS::Worker
-  end
-  # BMS
-end
+  end # BMS::Worker
+end # BMS

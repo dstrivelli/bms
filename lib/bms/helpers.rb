@@ -21,28 +21,6 @@ module Sinatra
       inflect.acronym 'RAM'
     end
 
-    def get_result(timestamp)
-      db = Daybreak::DB.new '/tmp/bms.db'
-      begin
-        db[timestamp]
-      ensure
-        db.close
-      end
-    end
-
-    def results
-      db = Daybreak::DB.new '/tmp/bms.db'
-      begin
-        if db[:runs]
-          db[:runs].reverse
-        else
-          []
-        end
-      ensure
-        db.close
-      end
-    end
-
     def worker_pid
       # Validate pid file exists
       pid = File.read('/tmp/bms_worker.pid').to_i
@@ -92,9 +70,7 @@ module Sinatra
     end
     alias display_integer display_number
     alias display_float   display_number
-  end
-  # Sinatra::BMS_Helpers
+  end # Sinatra::BMS_Helpers
 
   helpers BMSHelpers
-end
-# Sinatra
+end # Sinatra

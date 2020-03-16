@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'bms/db'
 require 'bms/result'
 
 # The default namespace for BMS

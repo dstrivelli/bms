@@ -8,6 +8,7 @@ $stdout.sync = true
 require 'config'
 require 'daybreak'
 require 'fileutils'
+require 'bms'
 require 'bms/worker'
 
 # Try to load Pry if it's available
@@ -38,6 +39,7 @@ begin
     Config.setting_files(File.join(__dir__, 'config'), env)
   )
   Settings.env = env
+  BMS::DB.load(Settings.db)
 
   # Start worker
   BMS::Worker.new
