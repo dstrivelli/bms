@@ -97,8 +97,6 @@ task :deploy do
   # Verify the production.yml is correct.
   local_yml = Digest::MD5.hexdigest File.read(LOCAL_YAML)
   helm_yml = Digest::MD5.hexdigest File.read(HELM_YAML)
-  unless local_yml == helm_yml
-    FileUtils.copy_file(LOCAL_YAML, HELM_YAML, preserve: true)
-  end
+  local_yml == helm_yml || FileUtils.copy_file(LOCAL_YAML, HELM_YAML, preserve: true)
   `#{HELM} upgrade bms charts/bms --namespace=bms`
 end
