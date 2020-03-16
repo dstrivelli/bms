@@ -8,11 +8,11 @@ ENV['RACK_ENV'] = 'test'
 
 require File.expand_path '../bms', __dir__
 
-module RspecMixin
+module RSpecMixin
   include Rack::Test::Methods
   def app
     Sinatra::Application
   end
 end
 
-Rspec.configure { |c| c.include RspecMixin }
+RSpec.configure { |c| c.include RSpecMixin }
