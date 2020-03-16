@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module BMS
-  VERSION = '0.0.9'
+  VERSION = '0.4.0'
 end

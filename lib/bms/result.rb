@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 module BMS
+  # Result class to hold results in extended OpenStruct
   class Result < OpenStruct
     def load(path)
-      @table = YAML.load(File.read(path))
+      @table = YAML.safe_load(File.read(path))
     end
   end
 end

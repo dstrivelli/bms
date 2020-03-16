@@ -1,9 +1,20 @@
 # Build Docker Image
 
 To build BMS docker image, you will need to have the docker installed locally.
-Then you can build the image with the following commands. You will need to be
-off the VA VPN to complete this step because it requires pulling libraries from
-rubygems.org which fails with the VA SSL terminating firewall (read: MITM)
+Then you can build the image with the following commands.
+
+## Using Rake
+
+If you have rake installed `gem install rake` then you can use the Rake tasks
+to build and push the image.
+
+```bash
+rake build
+# Validate your image was created with `docker image ls`
+rake push # You will have to have authenticated with container-registry first. See below.
+```
+
+## Building Manually
 
 ```bash
 # Build image
@@ -26,4 +37,4 @@ docker push container-registry.prod8.bip.va.gov/bms:<version>
 ```
 
 Now you should be able to verify the image is in the registry by visiting
-[https://nexus.prod8.bip.va.gov/].
+https://nexus.prod8.bip.va.gov/.

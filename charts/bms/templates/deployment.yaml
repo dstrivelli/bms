@@ -1,0 +1,44 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ include "bms.name" . }}
+  labels:
+    {{- include "bms.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "bms.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "bms.name" . }}
+        {{- include "bms.labels" . | nindent 8 }}
+    spec:
+      serviceAccount: {{ .Values.serviceaccount.name }}
+      containers:
+        - name: {{ include "bms.name" . }}
+          image: container-registry.prod8.bip.va.gov/bms:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: config-file
+              mountPath: /app/config/environments
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      volumes:
+        - name: config-file
+          configMap:
+            name: {{ include "bms.name" . }}
+      restartPolicy: Always

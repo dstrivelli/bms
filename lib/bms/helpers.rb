@@ -1,9 +1,12 @@
-require 'daybreak'
+# frozen_string_literal: true
 
+require 'daybreak'
 require 'sinatra/base'
 
+# We are extending the Sinatra module
 module Sinatra
-  module BMS_Helpers
+  # This module is for Sinatra helper methods
+  module BMSHelpers
     require 'active_support'
     require 'active_support/core_ext/numeric/conversions'
     require 'active_support/core_ext/string/inflections'
@@ -27,30 +30,33 @@ module Sinatra
       end
     end
 
-    def get_results
+    def results
       db = Daybreak::DB.new '/tmp/bms.db'
       begin
-        db[:runs].reverse
+        if db[:runs]
+          db[:runs].reverse
+        else
+          []
+        end
       ensure
         db.close
       end
     end
 
     def worker_pid
-      begin
-        pid = File.read('/tmp/bms_worker.pid')
-      rescue
-        nil
-      end
+      # Validate pid file exists
+      pid = File.read('/tmp/bms_worker.pid').to_i
+      return nil if pid.zero?
+
+      # Validate process is still running
+      Process.getpgid(pid)
+      pid
+    rescue Errno::ENOENT, Errno::ESRCH
+      nil
     end
 
     def worker_running?
-      pid = worker_pid
-      if pid
-        (Process.getpgid(pid) rescue nil).present?
-      else
-        false
-      end
+      worker_pid ? true : false
     end
 
     def display_heading(name)
@@ -60,11 +66,12 @@ module Sinatra
     end
 
     def display_value(name, value)
+      name = name.to_s
       method_name = "display_#{value.class.name.downcase}"
-      if self.respond_to? method_name
-        self.send(method_name, name, value)
+      if respond_to? method_name
+        send(method_name, name, value)
       else
-        self.send(:display_string, name, value)
+        send(:display_string, name, value)
       end
     end
 
@@ -72,21 +79,22 @@ module Sinatra
       display_string(name, value.join(delimiter))
     end
 
-    def display_string(name, value)
+    def display_string(_name, value)
       value.to_s
     end
 
     def display_number(name, value)
-      case
-      when name.end_with?('_percent')
+      if name.end_with?('_percent')
         value.to_s(:percentage, precision: 0)
       else
         value
       end
     end
-    alias_method :display_integer, :display_number
-    alias_method :display_float, :display_number
+    alias display_integer display_number
+    alias display_float   display_number
   end
+  # Sinatra::BMS_Helpers
 
-  helpers BMS_Helpers
+  helpers BMSHelpers
 end
+# Sinatra
