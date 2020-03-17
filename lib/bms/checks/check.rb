@@ -1,24 +1,18 @@
+# frozen_string_literal: true
+
 require 'bms'
-require 'logger'
 
 module BMS
   module Checks
+    # Generic class for checks
     class Check
-      attr_accessor :log
-
-      def initialize(args = {})
+      def initialize
+        @logger = Logging.logger[self]
         @result = BMS::Result.new
-        # Logger setup
-        if args[:logger]
-          @log = args[:logger]
-        else
-          @log = ::Logger.new(STDOUT)
-          @log.level = Settings.log_level ? Settings.log_level : :warn
-        end
       end
 
       def refresh
-        @log 'Refreshing data...'
+        @logger.info 'Refreshing data...'
       end
 
       def run
@@ -27,6 +21,7 @@ module BMS
       end
 
       def to_html
+        @logger.debug 'to_html'
       end
     end
   end

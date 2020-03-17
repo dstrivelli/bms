@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+require 'kubeclient'
 require 'bms/checks/check'
 
 module BMS
@@ -34,7 +37,7 @@ module BMS
       def run
         super
         # Get list of nodes
-        nodes = @kubectl.get_nodes
+        nodes = @kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
         nodes_arr = nodes.map { |x| x[:metadata][:name] }
 
         # Enumerate nodes

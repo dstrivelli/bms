@@ -2,10 +2,11 @@
 
 require 'benchmark'
 require 'kubeclient'
-require 'logger'
 require 'prometheus/api_client'
 
 require 'bms'
+require 'bms/kubectl'
+require 'bms/prom'
 
 module BMS
   # Class for BMS::Worker to run infinite loop gathering data.
@@ -13,30 +14,30 @@ module BMS
     attr_reader :last_result
 
     def initialize
-      @log = Logger.new(STDOUT)
-      @log.info 'Starting initialization.'
+      @logger = Logging.logger[self]
+      @logger.info 'Starting initialization.'
       # Init variables
       @last_result = nil
       # Start the main loop
       begin
         # Init Connections
-        init_kubernetes
-        init_prometheus
+        KubeCtl.connect(Settings.kubernetes.url)
+        Prom.connect(Settings.prometheus.url)
         loop do # TODO: Add some error handling here
           begin
-            @log.info 'Refreshing result data.'
+            @logger.info 'Refreshing result data.'
             elapsed = Benchmark.measure { @last_result = refresh }
-            @log.info "Completed refresh in #{elapsed.real.round(2)} seconds."
+            @logger.info "Completed refresh in #{elapsed.real.round(2)} seconds."
           rescue StandardError => e
-            @log.error "Error trying to run data refresh: #{e}"
+            @logger.error "Error trying to run data refresh: #{e}"
             raise if Settings.env == 'development'
           end
           sleep_for = Settings.worker.sleep rescue 300 # rubocop:disable Style/RescueModifier
-          @log.info("Sleeping for #{sleep_for} seconds...")
+          @logger.info("Sleeping for #{sleep_for} seconds...")
           sleep(sleep_for)
         end
       ensure
-        @log.info 'Shutting down...'
+        @logger.info 'Shutting down...'
       end
     end
 
@@ -44,38 +45,36 @@ module BMS
       results = Result.new
 
       # Setup some helper lambdas
-      q = ->(query) { @prom.query(query: query) }
-      single_value = ->(query) { q[query]['result'].first['value'].last }
-      multi_value = ->(query, name) { q[query]['result'].map { |x| { name: x['metric'][name.to_s], value: x['value'].last } } }
-      # fields_query = ->(query, fields) { q[query]['result'].map { |x| x['metric'].slice(*fields.map(&:to_s)) } }
-      # enum_query = ->(query, values) { values.map { |v| { name: v, value: single_value[query % { value: v }] } } }
+      #q = ->(query) { @prom.query(query: query) }
+      #single_value = ->(query) { q[query]['result'].first['value'].last }
+      #multi_value = ->(query, name) { q[query]['result'].map { |x| { name: x['metric'][name.to_s], value: x['value'].last } } }
 
       # Get nodes
-      nodes = @kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
+      nodes = KubeCtl.kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
 
       ###
       # Kubernetes Node Information
       ###
 
       cpu_saturation = lambda do |n|
-        rtn = single_value[%[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})]]
+        rtn = Prom.single_value(%[sum(kube_pod_container_resource_requests_cpu_cores{node="#{n}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{n}"})])
         return rtn.to_f * 100
       end
 
       cpu_utilization = lambda do |n|
-        cpu_alloc = @kubectl.get_node(n)[:status][:allocatable][:cpu]
-        cpu_used  = @kubectl_metrics.get_entity('nodes', n)[:usage][:cpu]
+        cpu_alloc = KubeCtl.kubectl.get_node(n)[:status][:allocatable][:cpu]
+        cpu_used  = KubeCtl.kubectl_metrics.get_entity('nodes', n)[:usage][:cpu]
         (BMS.convert_cores(cpu_used) / BMS.convert_cores(cpu_alloc)) * 100
       end
 
       mem_saturation = lambda do |n|
-        rtn = single_value[%[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})]]
+        rtn = Prom.single_value(%[sum(kube_pod_container_resource_requests_memory_bytes{node="#{n}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{n}"})])
         rtn.to_f * 100
       end
 
       ram_utilization = lambda do |n|
-        ram_alloc = @kubectl.get_node(n)[:status][:allocatable][:memory]
-        ram_used = @kubectl_metrics.get_entity('nodes', n)[:usage][:memory]
+        ram_alloc = KubeCtl.kubectl.get_node(n)[:status][:allocatable][:memory]
+        ram_used = KubeCtl.kubectl_metrics.get_entity('nodes', n)[:usage][:memory]
         (BMS.convert_ram(ram_used) / BMS.convert_ram(ram_alloc)) * 100
       end
 
@@ -99,7 +98,7 @@ module BMS
       # Kubernetes Pod Info
       ###
 
-      results[:unhealthy_pods] = @kubectl.get_pods(
+      results[:unhealthy_pods] = KubeCtl.kubectl.get_pods(
         field_selector: 'status.phase!=Running,status.phase!=Succeeded'
       ).map do |p|
         {
@@ -111,7 +110,7 @@ module BMS
 
       # Pods that have restarted in the past 24h
       qry = 'floor(delta(kube_pod_container_status_restarts_total[24h])) > 0'
-      results[:pod_restarts] = multi_value[qry, :pod]
+      results[:pod_restarts] = Prom.multi_value(qry, :pod)
 
       # Nodes with high load (5m?)
       # Deployments with mismatching requested v ready
@@ -126,7 +125,7 @@ module BMS
         when String
           values = { uri: values }
         else
-          @log.warn "Failed to parse URI. values.class == #{values.class}"
+          @logger.warn "Failed to parse URI. values.class == #{values.class}"
           next
         end
         values.default = {} # This helps us with nested lookup key errors
@@ -156,52 +155,15 @@ module BMS
                           end
       end
       results[:timestamp] = Time.now.to_i
-      binding.pry
       # Done grabbing results
       DB.save_result(results)
     end
 
     private
 
-    def init_kubernetes
-      # Setup connection to Kubernetes
-      k8_url = Settings.kubernetes.url rescue 'https://kubernetes.default.svc' # rubocop:disable Style/RescueModifier
-      @log.info "Initializing connection to k8 (#{k8_url})..."
-      secrets_dir = File.join(
-        ENV.fetch('TELEPRESENCE_ROOT', ''),
-        '/var/run/secrets/kubernetes.io/serviceaccount/'
-      )
-      auth_options = {
-        bearer_token_file: File.join(secrets_dir, 'token')
-      }
-      ssl_options = {
-        ca_file: File.join(secrets_dir, 'ca.crt')
-      }
-      @kubectl = Kubeclient::Client.new(
-        k8_url,
-        'v1',
-        auth_options: auth_options,
-        ssl_options: ssl_options
-      )
-      @kubectl_metrics = Kubeclient::Client.new(
-        URI.join(k8_url, '/apis/metrics.k8s.io'),
-        'v1beta1',
-        auth_options: auth_options,
-        ssl_options: ssl_options
-      )
-      @log.info 'Connection to k8 established.'
-    end
-
-    def init_prometheus
-      # Setup connection to Prometheus
-      @log.info 'Initializing connection to Prometheus...'
-      @prom = Prometheus::ApiClient.client(url: Settings.prometheus.url)
-      @log.info 'Connection to Prometheus established.'
-    end
-
     def fetch_uri(uri)
       # Get HTTP response from URI
-      @log.debug "fetch_uri: fetching #{uri}"
+      @logger.debug "fetch_uri: fetching #{uri}"
       uri = URI(uri)
       begin
         http = Net::HTTP.new(uri.host, uri.port)

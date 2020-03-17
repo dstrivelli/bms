@@ -10,7 +10,6 @@ require 'mail'
 require 'roadie'
 
 require 'bms'
-require 'bms/db'
 require 'bms/helpers'
 
 if development?
@@ -35,11 +34,10 @@ end
 
 post '/email' do
   @result = if params[:id]
-              get_result(params[:id])
+              BMS::DB.result(params[:id])
             else
-              get_result(:latest)
+              BMS::DB.result(:latest)
             end
-
   if params[:to]
     # TODO: Validate email is whitelisted
     to = params[:to]
@@ -83,9 +81,9 @@ end
 
 get '/result/:timestamp' do
   # TODO: Validate input
-  if (@result = get_result(params[:timestamp]))
+  if (@result = BMS::DB.result(params[:timestamp]))
     @header = 'BMS Health Report'
-    @caption = Time.at(@result[:timestamp]).strftime('%B %e, %Y %l:%M%P')
+    @caption = Time.at(@result.timestamp).strftime('%B %e, %Y %l:%M%P')
     slim :result
   else
     slim 'p No result found.'
@@ -93,7 +91,7 @@ get '/result/:timestamp' do
 end
 
 get '/results' do
-  if (@results = results)
+  if (@results = BMS::DB.runs)
     slim :results
   else
     slim 'p No results in the database.'
@@ -110,7 +108,7 @@ get '/health' do
     health[:worker] = 'stopped'
   end
   # Check database status
-  health[:last_refresh] = BMS::DB.get_result(:latest)[:timestamp]
+  health[:last_refresh] = BMS::DB.result(:latest)[:timestamp]
   if health[:last_refresh]
     health[:database] = 'running'
   else

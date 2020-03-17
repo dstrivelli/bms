@@ -88,6 +88,10 @@ GEM
       http (>= 3.0, < 5.0)
       recursive-open-struct (~> 1.0, >= 1.0.4)
       rest-client (~> 2.0)
+    little-plugger (1.1.4)
+    logging (2.2.2)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.10)
     lp (0.2.1)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
@@ -190,6 +194,7 @@ DEPENDENCIES
   daybreak
   json
   kubeclient
+  logging
   lp
   mail
   prometheus-api-client

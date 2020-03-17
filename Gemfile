@@ -11,6 +11,7 @@ gem 'config'                # Global application Settings
 gem 'daybreak'              # kv datastore
 gem 'json'
 gem 'kubeclient'            # Gather information from Kubernetes
+gem 'logging'
 gem 'mail'                  # Send emails
 gem 'prometheus-api-client' # Gather information from Prometheus
 gem 'roadie'                # In-line CSS for emails

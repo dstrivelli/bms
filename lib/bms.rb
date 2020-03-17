@@ -1,10 +1,24 @@
 # frozen_string_literal: true
 
+# These are required before everything else
+require 'logging'
+
+# Setup logging before we load subclasses
+Logging.logger.root.appenders = Logging.appenders.stdout#(layout: Logging.layouts.basic)
+Logging.logger.root.level = :debug
+# Example of how to fine tune logging
+# Logging.logger['BMS::Worker'].level = :info
+
+# Load any BMS classes we need for everyone
 require 'bms/db'
 require 'bms/result'
 
 # The default namespace for BMS
 module BMS
+  def self.log_level=(level)
+    Logging.logger.root.level = level
+  end
+
   CPU_ORDERS_OF_MAGNITUDE = {
     m: 1000,
     n: 1_000_000_000

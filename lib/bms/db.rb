@@ -2,23 +2,31 @@
 
 require 'bms/result'
 require 'daybreak'
+require 'logging'
 require 'singleton'
 
 module BMS
-  class DatabaseAlreadyInitializedError < StandardError
+  class DatabaseNotInitializedError < StandardError
   end
 
-  class DatabaseNotInitilizedError < StandardError
-  end
-
+  # Singleton class to handle database interactions
   class DB
     include Singleton
 
+    attr_reader :db
+
+    @db = nil
+    @logger = ::Logging.logger[self]
+
     def self.load(filename)
-      @db.close if (defined?(@db) && @db)
+      @logger.debug "Loading #{filename}"
+      if @db
+        @logger.debug 'Previous @db loaded. Closing.'
+        @db.close
+      end
       @db = Daybreak::DB.new(filename)
       at_exit do
-        @db.close if (defined?(@db) && @db)
+        @db&.close
       end
       # Init :runs if empty db
       @db[:runs] = [] unless @db[:runs].is_a? Array
@@ -28,43 +36,39 @@ module BMS
     end
 
     def self.close
-      self.validate_db
-      @db.close
+      @db&.close
       @db = nil
     end
 
     def self.validate_db
-      raise DatabaseNotInitializedError unless (defined?(@db) && @db)
+      raise DatabaseNotInitializedError unless @db
     end
 
-    def self.get_runs
-      self.validate_db
+    def self.runs
+      validate_db
       @db[:runs].reverse
     end
 
-    def self.get_result(timestamp)
-      self.validate_db
-      @db[timestamp]
-    end
-
     def self.[](key)
-      self.validate_db
+      validate_db
       @db[key]
     end
+    self.singleton_class.send(:alias_method, :result, :[])
 
     def self.[]=(key, value)
-      self.validate_db
+      validate_db
       @db.set! key, value
     end
+    self.singleton_class.send(:alias_method, :set, :[]=)
 
     def self.save_result(result)
-      self.validate_db
+      validate_db
       @db.lock do
-        #@log.debug { "Current @db[:runs].count = #{@db[:runs].count}" }
-        self[:runs].append(result[:timestamp])
-        #@log.debug { "After addition @db[:runs].count = #{@db[:runs].count}" }
+        @logger.debug { "Current @db[:runs].count = #{@db[:runs].count}" }
+        self[:runs] = self[:runs].append(result[:timestamp])
+        @logger.debug { "After addition @db[:runs].count = #{@db[:runs].count}" }
         self[result[:timestamp]] = result
-        self[:latest] = result[:timestamp]
+        self[:latest] = result
         # Not entirely sure this flush is necessary but whatever
         @db.flush
       end
