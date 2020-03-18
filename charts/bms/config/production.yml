@@ -38,4 +38,4 @@ uris:
       501: UNINITIALIZED
       503: SEALED
 worker:
-  sleep: 1800
+  sleep: 900

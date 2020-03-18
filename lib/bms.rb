@@ -4,7 +4,7 @@
 require 'logging'
 
 # Setup logging before we load subclasses
-Logging.logger.root.appenders = Logging.appenders.stdout#(layout: Logging.layouts.basic)
+Logging.logger.root.appenders = Logging.appenders.stdout # (layout: Logging.layouts.basic)
 Logging.logger.root.level = :debug
 # Example of how to fine tune logging
 # Logging.logger['BMS::Worker'].level = :info

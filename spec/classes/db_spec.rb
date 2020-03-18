@@ -8,11 +8,6 @@ require 'bms/db'
 # Since this is a very statefule class, I have decided to test behavior in the
 # different states of the class instead of the methods.
 
-RSpec.shared_examples 'accessor' do |param|
-  it 'should not throw an error' do
-  end
-end
-
 # Spec to test the BMS::DB
 module BMS
   describe DB do
@@ -20,7 +15,7 @@ module BMS
     let(:notinitialized) { DatabaseNotInitializedError }
 
     it 'should act like Singleton' do
-      expect{DB.new}.to raise_error(NoMethodError)
+      expect { DB.new }.to raise_error(NoMethodError)
     end
 
     context 'with unintialized database' do
@@ -35,55 +30,55 @@ module BMS
 
       describe '.close' do
         it 'should not raise an error' do
-          expect{DB.close}.to_not raise_error
+          expect { DB.close }.to_not raise_error
         end
       end
 
       describe '.validate_db' do
         it 'should raise an error' do
-          expect{DB.validate_db}.to raise_error(notinitialized)
+          expect { DB.validate_db }.to raise_error(notinitialized)
         end
       end
 
       describe '.runs' do
         it 'should raise an error' do
-          expect{DB.runs}.to raise_error(notinitialized)
+          expect { DB.runs }.to raise_error(notinitialized)
         end
       end
 
       describe '.[]' do
         it 'should raise an error' do
-          expect{DB[:latest]}.to raise_error(notinitialized)
+          expect { DB[:latest] }.to raise_error(notinitialized)
         end
       end
 
       describe '.result()' do
         it 'should raise an error' do
-          expect{DB.result(:latest)}.to raise_error(notinitialized)
+          expect { DB.result(:latest) }.to raise_error(notinitialized)
         end
       end
 
       describe '.[]=' do
         it 'should raise an error' do
-          expect{DB[:key] = :value}.to raise_error(notinitialized)
+          expect { DB[:key] = :value }.to raise_error(notinitialized)
         end
       end
 
       describe '.set' do
         it 'should raise an error' do
-          expect{DB.set(:key, :value)}.to raise_error(notinitialized)
+          expect { DB.set(:key, :value) }.to raise_error(notinitialized)
         end
       end
 
       describe '.[]=' do
         it 'should raise an error' do
-          expect{DB[:key] = :value}.to raise_error(notinitialized)
+          expect { DB[:key] = :value }.to raise_error(notinitialized)
         end
       end
 
       describe '.save_result()' do
         it 'should raise an error' do
-          expect{DB.save_result(:value)}.to raise_error(notinitialized)
+          expect { DB.save_result(:value) }.to raise_error(notinitialized)
         end
       end
     end # invalid db
@@ -92,15 +87,15 @@ module BMS
       let(:blank_db) { File.expand_path('../artifacts/blank.db', __dir__) }
 
       before do
-        FileUtils.rm_f(blank_db) if File.exists?(blank_db)
+        FileUtils.rm_f(blank_db) if File.exist?(blank_db)
         DB.load(blank_db)
       end
 
       after do
         DB.close
-        FileUtils.rm_f(blank_db) if File.exists?(blank_db)
+        FileUtils.rm_f(blank_db) if File.exist?(blank_db)
       end
-       
+
       describe '.load' do
         it 'should return a valid BMS:DB' do
           expect(DB.load(db_file)).to eql(BMS::DB)
@@ -119,31 +114,31 @@ module BMS
 
       before { FileUtils.cp(db_file, test_file) }
       after do
-        FileUtils.rm(test_file) if File.exists?(test_file)
+        test_db&.close
+        FileUtils.rm(test_file) if File.exist?(test_file)
         DB.close
       end
 
       before(:each) { DB.load(test_file) }
       after(:each) do
         DB.close
-        test_db&.close
       end
 
       describe '.load' do
         it 'should not throw an error' do
-          expect{DB.load(db_file)}.to_not raise_error
+          expect { DB.load(db_file) }.to_not raise_error
         end
       end
-      
+
       describe '.close' do
         it 'should not throw an error' do
-          expect{DB.close}.to_not raise_error
+          expect { DB.close }.to_not raise_error
         end
       end
 
       describe 'validate_db' do
         it 'should not throw an error' do
-          expect{DB.validate_db}.to_not raise_error
+          expect { DB.validate_db }.to_not raise_error
         end
       end
 

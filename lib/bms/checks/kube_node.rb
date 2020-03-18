@@ -5,6 +5,7 @@ require 'bms/checks/check'
 
 module BMS
   module Checks
+    # Class to handle all checks against k8 nodes
     class KubeNode < Check
       attr_accessor :kubectl
 
@@ -19,17 +20,15 @@ module BMS
           auth_options = {
             bearer_token_file: File.join(secrets_dir, 'token')
           }
-          ssl_options = {}
-          if File.exists? File.join(secrets_dir, 'ca.crt')
-            ssl_options[:ca_file] = File.join(secrets_dir, 'ca.crt')
-          end
+          ssl_options = {
+            ca_file: File.join(secrets_dir, 'ca.crt')
+          }
           @kubectl = Kubeclient::Client.new(
             'https://kubernetes.default.svc',
             'v1',
             auth_options: auth_options,
             ssl_options: ssl_options
           )
-          #namespace = File.read File.join(secrets_dir, 'namespace')
           @log.info 'Connection to Kubernetes established.'
         end
       end # .initialize
@@ -38,7 +37,6 @@ module BMS
         super
         # Get list of nodes
         nodes = @kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
-        nodes_arr = nodes.map { |x| x[:metadata][:name] }
 
         # Enumerate nodes
         nodes.each do |node|

@@ -7,6 +7,7 @@ module BMS
   class PrometheusNotConnectedError < StandardError
   end
 
+  # Class to handle Promethus queries
   class Prom
     include Singleton
 

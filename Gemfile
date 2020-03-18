@@ -9,6 +9,7 @@ ruby '2.6.5'
 gem 'activesupport'         # Adds helper methods
 gem 'config'                # Global application Settings
 gem 'daybreak'              # kv datastore
+gem 'httparty'              # Fun with HTTP
 gem 'json'
 gem 'kubeclient'            # Gather information from Kubernetes
 gem 'logging'

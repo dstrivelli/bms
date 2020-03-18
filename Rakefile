@@ -31,15 +31,8 @@ desc 'Build docker image'
 task :build do
   # Validate rubocop is clean
   Rake::Task[:rubocop].invoke
-  # Validate no bindings left in source
-  results = `find #{__dir__} -type f -exec egrep -Hn '^[^#]*binding\.(irb|pry|pry_remote)' {} \\;`
-  raise 'Failed to validate no bindings present.' unless $CHILD_STATUS == 0
-
-  unless results.empty?
-    puts 'Validation failed. Ruby bindings found in the following instances:'
-    puts results
-    exit 1
-  end
+  # Run RSpec test
+  Rake::Task[:spec].invoke
 
   puts 'Building ctags...'
   `ctags -R`

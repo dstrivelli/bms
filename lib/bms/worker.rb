@@ -44,11 +44,6 @@ module BMS
     def refresh
       results = Result.new
 
-      # Setup some helper lambdas
-      #q = ->(query) { @prom.query(query: query) }
-      #single_value = ->(query) { q[query]['result'].first['value'].last }
-      #multi_value = ->(query, name) { q[query]['result'].map { |x| { name: x['metric'][name.to_s], value: x['value'].last } } }
-
       # Get nodes
       nodes = KubeCtl.kubectl.get_nodes selector: '!node-role.kubernetes.io/master'
 
@@ -139,7 +134,7 @@ module BMS
                               result: json[values[:value]]
                             }
                           when :response_code
-                            msg = values[:response_codes][resp.code.to_sym] ||
+                            msg = values[:response_codes][resp.code.to_s.to_sym] ||
                                   resp.message
                             {
                               name: name.to_s,

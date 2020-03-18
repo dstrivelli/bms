@@ -21,6 +21,11 @@ spec:
         - name: {{ include "bms.name" . }}
           image: container-registry.prod8.bip.va.gov/bms:{{ .Chart.AppVersion }}
           imagePullPolicy: Always
+          env:
+            - name: APP_ENV
+              value: production
+            - name: RACK_ENV
+              value: production
           ports:
             - containerPort: 5000
           volumeMounts:
@@ -33,7 +38,7 @@ spec:
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /health
+              path: /reports/health
               port: 5000
             initialDelaySeconds: 10
             periodSeconds: 30

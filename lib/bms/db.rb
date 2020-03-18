@@ -16,10 +16,16 @@ module BMS
     attr_reader :db
 
     @db = nil
+    @filename = nil
     @logger = ::Logging.logger[self]
 
     def self.load(filename)
       @logger.debug "Loading #{filename}"
+      if filename == @filename
+        @logger.debug 'Not loading database that is already initialized.'
+        return self
+      end
+      @filename = filename
       if @db
         @logger.debug 'Previous @db loaded. Closing.'
         @db.close
@@ -38,6 +44,7 @@ module BMS
     def self.close
       @db&.close
       @db = nil
+      @filename = nil
     end
 
     def self.validate_db
@@ -46,27 +53,28 @@ module BMS
 
     def self.runs
       validate_db
-      @db[:runs].reverse
+      self[:runs].reverse
     end
 
     def self.[](key)
       validate_db
+      @db.load
       @db[key]
     end
-    self.singleton_class.send(:alias_method, :result, :[])
+    singleton_class.send(:alias_method, :result, :[])
 
     def self.[]=(key, value)
       validate_db
       @db.set! key, value
     end
-    self.singleton_class.send(:alias_method, :set, :[]=)
+    singleton_class.send(:alias_method, :set, :[]=)
 
     def self.save_result(result)
       validate_db
       @db.lock do
-        @logger.debug { "Current @db[:runs].count = #{@db[:runs].count}" }
+        @logger.debug { "Current @db[:runs].count = #{self[:runs].count}" }
         self[:runs] = self[:runs].append(result[:timestamp])
-        @logger.debug { "After addition @db[:runs].count = #{@db[:runs].count}" }
+        @logger.debug { "After addition @db[:runs].count = #{self[:runs].count}" }
         self[result[:timestamp]] = result
         self[:latest] = result
         # Not entirely sure this flush is necessary but whatever
