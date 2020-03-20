@@ -5,13 +5,16 @@ html lang='en'
     meta charset='utf-8'
     meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
     link rel='stylesheet' href='/css/bootstrap-4.4.1.min.css'
-    link rel='stylesheet' href='/css/reset.css'
+    //link rel='stylesheet' href='/css/reset.css'
     link rel='stylesheet' href='/css/styles.css'
     script src='/js/jquery-3.4.1.min.js'
     script src='/js/popper-1.16.0.min.js'
     script src='/js/scripts.js'
   body
     #wrapper
+      #flashes
+        - flash.each do |type, msg|
+          == slim :_alert, locals: { type: type, msg: msg }
       #header
         h1 = @header ? @header : 'BIP Monitoring System'
         - if @caption

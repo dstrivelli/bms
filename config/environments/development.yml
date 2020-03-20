@@ -1,6 +1,8 @@
-log_level: DEBUG
+log_level: debug
 email:
-  approved: ['*']
+  approved:
+    - '^.*@bah\.com$'
+    - '^.*@va\.gov$'
   distro:
     to: 'alexander.loy@va.gov'
   smtp:

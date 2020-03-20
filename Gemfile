@@ -18,6 +18,7 @@ gem 'prometheus-api-client' # Gather information from Prometheus
 gem 'roadie'                # In-line CSS for emails
 gem 'sassc'                 # SASS Compiler
 gem 'sinatra'
+gem 'sinatra-flash'         # Nice alert notifications in pages
 gem 'slim'                  # Templating
 gem 'thin'                  # Use Thin for web handler
 
@@ -31,6 +32,8 @@ group :development do
 end
 
 group :test do
+  gem 'capybara'
   gem 'rack-test'
   gem 'rspec'
+  gem 'rspec-html-matchers'
 end

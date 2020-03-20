@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
-
+require 'display_helpers'
 require 'sinatra/base'
-require 'slim'
+require 'sinatra/flash'
 require 'sassc'
 
 # Base class for all Controllers
 class ApplicationController < Sinatra::Base
   set :root, File.expand_path('..', __dir__)
+  enable :sessions
+  register Sinatra::Flash
+
+  helpers DisplayHelpers
 
   get '/' do
     redirect '/reports/latest'
@@ -18,5 +21,10 @@ class ApplicationController < Sinatra::Base
     scss :styles
   end
 
-  # not_found{ 'not found' }
+  get '/test' do
+    flash.now[:notice] = 'Test notification.'
+    slim 'Test Body'
+  end
+
+  not_found { "I don't know what you want. Go back I guess." }
 end

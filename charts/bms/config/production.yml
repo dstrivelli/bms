@@ -1,8 +1,8 @@
-log_level: INFO
+log_level: info
 email:
   approved:
-    - '*@bah.com'
-    - '*@va.com'
+    - '^.*@bah\.com$'
+    - '^.*@va\.gov$'
   distro:
     to:
       - E_BIP_Platform_Prod_HealthCheck@bah.com

@@ -17,6 +17,21 @@ module DisplayHelpers
     inflect.acronym 'RAM'
   end
 
+  def bootstrap_class_for(type)
+    case type
+    when :success
+      'alert-success'
+    when :error
+      'alert-danger'
+    when :alert
+      'alert-warning'
+    when :notice
+      'alert-info'
+    else
+      type.to_s
+    end
+  end
+
   def current?(path = '/')
     request.path_info == path ? 'current' : nil
   end
@@ -35,6 +50,10 @@ module DisplayHelpers
 
   def worker_running?
     worker_pid ? true : false
+  end
+
+  def display_time(timestamp)
+    Time.at(timestamp).strftime('%B %e, %Y %l:%M%P')
   end
 
   def display_heading(name)

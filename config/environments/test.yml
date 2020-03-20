@@ -1,18 +1,11 @@
-log_level: info
 email:
   approved:
-    - '^.*@bah\.com$'
-    - '^.*@va\.gov$'
+    - '^.*@approved\.com$'
+    - '^.*@alsoapproved\.con$'
   distro:
-    to:
-      - E_BIP_Platform_Prod_HealthCheck@bah.com
-    cc:
-      - alexander.loy@va.gov
-      - jeffrey.jensen2@va.gov
-  smtp:
-    host: smtp.va.gov
-    port: 25
-keep_results: 20
+    to: 'corporate.suit@approved.com'
+  test: true
+keep_results: 5
 kubernetes:
   url: https://kubernetes.default.svc
 prometheus:
@@ -38,4 +31,4 @@ uris:
       501: UNINITIALIZED
       503: SEALED
 worker:
-  sleep: 900
+  sleep: 60

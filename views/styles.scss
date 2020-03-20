@@ -2,37 +2,25 @@ $font-stack: "Lucida Grande", Verdana, sans-serif;
 $primary-color: #444444;
 
 body {
-  font-family: $font-stack;
-  font-size: 14px;
-  line-height: 1.25em;
-  color: #444444;
+  //font-family: $font-stack;
+  //font-size: 14px;
+  //line-height: 1.25em;
+  //color: #444444;
   background-color: #FAFAFA;
   max-width: 990px;
   padding: 0 20px;
   margin: 0 auto;
 }
 
-h1, h2, h3, h4, h5 {
-  font-family: Georgia, "bitstream vera serif", serif;
-  margin: 40px 0 20px 0;
-  color: #222222;
-  line-height: 1.5em;
-}
-
-h1 {
-  font-size: 2em;
-}
-
 #wrapper {
   clear: both;
   display: block;
   float: left;
-  margin-left: 0;
+  margin: 25px auto;
   width: 100%;
 }
 
 #header {
-  margin: 10px 0px;
   overflow: hidden;
   text-align: center;
 
@@ -41,7 +29,7 @@ h1 {
   }
 
   .caption {
-    font-family: Georgia;
+    //font-family: Georgia;
     font-style: oblique;
   }
 }

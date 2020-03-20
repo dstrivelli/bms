@@ -1,3 +1,40 @@
+function sendEmail(id) {
+  var data = { id: id };
+  var to = $('#emailModalAddress').val();
+  if (to) {
+    data['to'] = to;
+  }
+
+  $.ajax({
+    type: 'POST',
+    dataType: 'html',
+    url: '/reports/email',
+    data: data,
+    success: processEmailSuccess,
+    error: processEmailError
+  });
+}
+
+function hideAndClearEmailModal() {
+  console.log('executing hideAndClearEmailModal');
+  $('#emailModal').modal('hide');
+  $('#emailModalAddress').val('');
+}
+
+function processEmailSuccess(data) {
+  console.log('executing processEmailsuccess');
+  console.log(data);
+  hideAndClearEmailModal();
+  document.getElementById('flashes').innerHTML = data;
+}
+
+function processEmailError(xhr, status, error) {
+  console.log('executing processEmailError');
+  console.log(xhr);
+  hideAndClearEmailModal();
+  document.getElementById('flashes').innerHTML = xhr.responseText;
+}
+
 function getTags(image) {
   $.ajax({
     type: 'GET',
@@ -32,8 +69,4 @@ function getLabels(image, tag) {
       alert('Error: ' + textStatus);
     }
   })
-}
-
-function process_alert(result) {
-  alert(result);
 }

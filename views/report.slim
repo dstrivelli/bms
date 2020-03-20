@@ -1,4 +1,3 @@
-button#email onclick="$.post('/reports/email', {id: '#{@report[:timestamp]}'}, process_alert)" Email
 h2 Kubernetes Nodes
 == slim :_table, locals: { table: @report[:nodes] }
 h2 Unhealthy Pods

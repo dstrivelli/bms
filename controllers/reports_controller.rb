@@ -5,28 +5,53 @@ require 'json'
 require 'mail'
 require 'roadie'
 
+require 'application_controller'
+require 'display_helpers'
+require 'email_helpers'
+
 # Controller to handle health reports
 class ReportsController < ApplicationController
-  helpers DisplayHelpers
+  helpers EmailHelpers
 
   get '/' do
     redirect '/reports/latest'
   end
 
   post '/email' do
+    params[:id] = params[:id].to_sym if params[:id].is_a? String
+
+    # Get email settings
+    settings = Settings&.email || Hash.new(nil)
+    whitelists = Settings&.email&.approved || []
+
+    to = settings&.distro&.to || []
+    cc = settings&.distro&.cc || []
+
+    to = params[:to] if params[:to]
+    cc = params[:cc] if params[:cc]
+
+    to = [to] if to.is_a? String
+    cc = [cc] if cc.is_a? String
+
+    # Validate if email addresses are approved
+    email_approvals = validate_emails(to + cc, whitelists: whitelists)
+    unless email_approvals[:approved]
+      status 401
+      return slim :_alert, locals: { type: :error, msg: email_approvals[:reason] }, layout: nil
+    end
+
     @report = if params[:id]
                 BMS::DB[params[:id]]
               else
                 BMS::DB[:latest]
               end
-    if params[:to]
-      # TODO: Validate email is whitelisted
-      to = params[:to]
-    else
-      to = Settings.email.distro.to
-      cc = Settings.email.distro.cc || nil
+
+    unless @report
+      status 401
+      return slim :_alert, locals: { type: :error, msg: 'Email failed. Invalid report id.' }, layout: nil
     end
-    subject = "[BMS] Snapshot Report - #{Time.at(@report[:timestamp]).strftime('%Y-%m-%d %I:%M%P')}"
+
+    subject = "[BMS] Snapshot Report - #{display_time(@report[:timestamp])}"
 
     # Process html body
     html = Roadie::Document.new(slim(:report, layout: :layout_email))
@@ -42,13 +67,12 @@ class ReportsController < ApplicationController
           content_type 'text/html; charset=UTF-8'
           body html.transform
         end
-        delivery_method :smtp, address: Settings.email.smtp.host, port: Settings.email.smtp.port
       end.deliver
-    rescue StandardError => e
-      logger.error e.to_s
-      'There was an error while attempting to send the email.'
+    rescue StandardError
+      status 500
+      slim :_alert, locals: { type: :error, msg: 'There was an error while attempting to send the email.' }, layout: nil
     else
-      'Email sent'
+      slim :_alert, locals: { type: :notice, msg: 'Email sent' }, layout: nil
     end
   end
 
@@ -64,8 +88,8 @@ class ReportsController < ApplicationController
     # TODO: Validate input
     if (@report = BMS::DB.result(timestamp))
       @header = 'BMS Health Report'
-      @caption = Time.at(@report.timestamp).strftime('%B %e, %Y %l:%M%P')
-      slim :report
+      @caption = display_time(@report.timestamp)
+      slim :report_with_email_button
     else
       slim 'p No result found.'
     end
