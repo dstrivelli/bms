@@ -5,8 +5,9 @@ email:
     - '^.*@va\.gov$'
   distro:
     to: 'alexander.loy@va.gov'
-  smtp:
-    host: 'localhost'
+  manner: smtp
+  options:
+    address: 'localhost'
     port: 1025
 keep_results: 5
 kubernetes:

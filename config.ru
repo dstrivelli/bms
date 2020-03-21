@@ -9,13 +9,24 @@ require 'sinatra/base'
 
 require 'bms/db'
 
+env = ENV.fetch('APP_ENV', 'development')
+
+# Load some dev stuff
+if env == 'development'
+  begin
+    require 'pry'
+    require 'pry-remote'
+  rescue LoadError
+    nil
+  end
+end
+
 # Load settings first.
 Config.setup do |config|
   config.use_env = true
   config.env_prefix = 'BMS'
   config.env_separator = '__'
 end
-env = ENV.fetch('APP_ENV', 'development')
 Config.load_and_set_settings(
   Config.setting_files(File.join(__dir__, 'config'), env)
 )
@@ -30,23 +41,14 @@ Logging.logger.root.level = Settings&.log_level || :warn
 BMS::DB.load(Settings.db)
 
 # Initialize Mail
-if Settings&.email&.key?(:smtp)
-  host = Settings.email.smtp&.host || 'localhost'
-  port = Settings.email.smtp&.port || 25
-
-  Mail.defaults do
-    delivery_method :smtp, host: host, port: port
-  end
-end
-
-# Load some dev stuff
-if env == 'development'
-  begin
-    require 'pry'
-    require 'pry-remote'
-  rescue LoadError
-    nil
-  end
+mail_defaults = {
+  address: 'smtp.va.gov',
+  port: 25
+}
+manner = Settings&.email&.manner || :smtp
+options = Settings&.email&.options || mail_defaults
+Mail.defaults do
+  delivery_method manner, options
 end
 
 # Load all our application requirements

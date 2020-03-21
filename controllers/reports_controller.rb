@@ -21,11 +21,11 @@ class ReportsController < ApplicationController
     params[:id] = params[:id].to_sym if params[:id].is_a? String
 
     # Get email settings
-    settings = Settings&.email || Hash.new(nil)
+    email_settings = Settings&.email || Hash.new(nil)
     whitelists = Settings&.email&.approved || []
 
-    to = settings&.distro&.to || []
-    cc = settings&.distro&.cc || []
+    to = email_settings&.distro&.to || []
+    cc = email_settings&.distro&.cc || []
 
     to = params[:to] if params[:to]
     cc = params[:cc] if params[:cc]
@@ -55,7 +55,14 @@ class ReportsController < ApplicationController
 
     # Process html body
     html = Roadie::Document.new(slim(:report, layout: :layout_email))
-    html.add_css(scss(:styles))
+    html.url_options = {
+      host: 'bms.prod8.bip.va.gov',
+      protocol: 'https'
+    }
+    html.asset_providers = [
+      Roadie::FilesystemProvider.new(File.expand_path('public', settings.root))
+    ]
+    html.add_css scss(:styles)
 
     begin
       Mail.new do
@@ -69,6 +76,8 @@ class ReportsController < ApplicationController
         end
       end.deliver
     rescue StandardError
+      raise if settings.development?
+
       status 500
       slim :_alert, locals: { type: :error, msg: 'There was an error while attempting to send the email.' }, layout: nil
     else

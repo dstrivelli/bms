@@ -9,9 +9,6 @@ email:
     cc:
       - alexander.loy@va.gov
       - jeffrey.jensen2@va.gov
-  smtp:
-    host: smtp.va.gov
-    port: 25
 keep_results: 20
 kubernetes:
   url: https://kubernetes.default.svc

@@ -1,17 +1,20 @@
 FROM ruby:2.6.5-alpine
-MAINTAINER zan.loy@gmail.com
+LABEL maintainer='zan.loy@gmail.com'
 
 # Configure container to use EST
 RUN apk add --no-cache tzdata && \
     cp /usr/share/zoneinfo/America/New_York /etc/localtime && \
-    echo "America/New_York" > /etc/timezone && \
+    echo 'America/New_York' > /etc/timezone && \
     apk del --purge tzdata
+LABEL tz='America/New_York'
 
 # Setup VA certs
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
+LABEL va-certs='installed'
     
 ENV APP_ENV production
+ENV RACK_ENV production
 # Per https://bundler.io/guides/bundler_docker_guide.html
 ENV GEM_HOME /usr/local/bundle
 ENV PATH $GEM_HOME/bin:$GEM_HOME/gems/bin:$PATH
@@ -27,6 +30,8 @@ RUN apk add --no-cache build-base libstdc++ ruby-dev zlib-dev && \
     bundle install && \
     apk del --purge build-base ruby-dev zlib-dev
 
+LABEL wtf='What are you looking?'
+
 EXPOSE 5000
 
-CMD ["foreman", "start"]
+CMD ['foreman', 'start']

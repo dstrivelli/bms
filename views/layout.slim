@@ -4,14 +4,24 @@ html lang='en'
     title BIP Monitoring System
     meta charset='utf-8'
     meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
-    link rel='stylesheet' href='/css/bootstrap-4.4.1.min.css'
-    //link rel='stylesheet' href='/css/reset.css'
+    link rel='stylesheet' href='/css/font-awesome.all.css'
+    link rel='stylesheet' href='/css/bootstrap.css'
+    link rel='stylesheet' href='/css/mdb.css'
     link rel='stylesheet' href='/css/styles.css'
+    - if @stylesheets
+      - @stylesheets.each do |stylesheet|
+        link rel='stylesheet' href=stylesheet
     script src='/js/jquery-3.4.1.min.js'
-    script src='/js/popper-1.16.0.min.js'
-    script src='/js/scripts.js'
+    script src='/js/popper.js'
+    script src='/js/bootstrap.js'
+    script src='/js/mdb.js'
+    script src='/js/bms.js'
+    - if @scripts
+      - @scripts.each do |js|
+        script src=js
   body
-    #wrapper
+    == slim :_navbar
+    div id='layout-main' class='container-fluid'
       #flashes
         - flash.each do |type, msg|
           == slim :_alert, locals: { type: type, msg: msg }
@@ -20,14 +30,6 @@ html lang='en'
         - if @caption
           .caption = @caption
         hr
-        .flex-list
-          ul
-            li
-              a href='/reports/latest' latest
-            li
-              a href='/reports/list' list
-            li
-              a href='/labels' labels
       #content.container
         == yield
       #footer

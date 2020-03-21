@@ -51,6 +51,11 @@ module BMS
       raise DatabaseNotInitializedError unless @db
     end
 
+    def self.key?(key)
+      validate_db
+      @db.keys.include? key
+    end
+
     def self.runs
       validate_db
       self[:runs].reverse

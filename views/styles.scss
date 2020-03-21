@@ -7,17 +7,8 @@ body {
   //line-height: 1.25em;
   //color: #444444;
   background-color: #FAFAFA;
-  max-width: 990px;
-  padding: 0 20px;
+  padding: 70px 20px 0;
   margin: 0 auto;
-}
-
-#wrapper {
-  clear: both;
-  display: block;
-  float: left;
-  margin: 25px auto;
-  width: 100%;
 }
 
 #header {
@@ -32,18 +23,6 @@ body {
     //font-family: Georgia;
     font-style: oblique;
   }
-}
-#content {
-  margin: 0px 25px 25px 25px;
-}
-
-ul {
-  margin: 0px;
-  list-style-type: none;
-}
-
-li {
-  margin: 0px;
 }
 
 #label-menu {
@@ -89,39 +68,9 @@ li {
 }
 
 #footer {
-  margin-bottom: 20px;
-}
-
-a {
-  color: #3f3f3f;
-  text-decoration: none;
-  display: inline-block;
-  margin: 0px 5px;
+  margin: 20px 0;
 }
 
 button#email {
   float: right;
-}
-
-.flex-list {
-  position: relative;
-  margin: 1em;
-  overflow: hidden;
-
-  ul {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-left: -1px;
-  }
-
-  li {
-    flex-grow: 1;
-    flex-basis: auto;
-    margin: .25em 0;
-    padding: 0 1em;
-    text-align: center;
-    border-left: 1px solid #ccc;
-  }
 }

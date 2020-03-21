@@ -13,14 +13,13 @@
             - v = v.join(', ') if v.is_a? Array
             - colour = ''
             - if k.to_s.end_with? '_percent'
-              - if v >= 90
-                - colour = 'red'
-              - elsif v >= 75
-                - colour = 'orange'
+              - v = parse_percentage(v)
               td
-                .meter
+                div class='progress'
+                  div class="progress-bar progress-bar-striped #{v[:bg]}" role='progressbar' style="width: #{v[:text]}" aria-valuenow=v[:value] aria-valuemin='0' aria-valuemax='100' = v[:text]
+                //.meter
                   .bar class="#{colour}" style="width:#{v.to_s(:percentage, precision: 0)}"
-                span = display_value(k, v)
+                //span = display_value(k, v)
             - else
               td = display_value(k, v)
 - else

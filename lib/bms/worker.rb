@@ -26,7 +26,12 @@ module BMS
         loop do # TODO: Add some error handling here
           begin
             @logger.info 'Refreshing result data.'
-            elapsed = Benchmark.measure { @last_result = refresh }
+            elapsed = Benchmark.measure do
+              @last_result = refresh
+              NexusRepo.repos.each do |tier|
+                refresh_labels(tier, use_cache: false)
+              end
+            end
             @logger.info "Completed refresh in #{elapsed.real.round(2)} seconds."
           rescue StandardError => e
             @logger.error "Error trying to run data refresh: #{e}"
@@ -152,6 +157,12 @@ module BMS
       results[:timestamp] = Time.now.to_i
       # Done grabbing results
       DB.save_result(results)
+    end
+
+    def refresh_labels(tier)
+      nexus = NexusRepo.new(tier)
+      result = nexus.images_with_tags
+      BMS::DB.set["#{tier}-labels"] = result
     end
 
     private

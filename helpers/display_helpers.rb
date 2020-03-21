@@ -17,6 +17,19 @@ module DisplayHelpers
     inflect.acronym 'RAM'
   end
 
+  ##
+  # Does a very simple check taking the name of a variable to use to check the
+  # value against +value+
+
+  def active?(variable, value, string = 'active')
+    eval("@#{variable} == '#{value}'") ? string : '' # rubocop:disable all
+  end
+
+  def active_app?(app)
+    app = [app] if app.is_a? String
+    app.include?(@active_app) ? 'active' : ''
+  end
+
   def bootstrap_class_for(type)
     case type
     when :success
@@ -50,6 +63,21 @@ module DisplayHelpers
 
   def worker_running?
     worker_pid ? true : false
+  end
+
+  def parse_percentage(percentage, percision: 0)
+    percentage = percentage.round(percision)
+    payload = { value: percentage }
+    payload[:text] = "#{percentage}%"
+    payload[:bg] = case percentage
+                   when 90..100
+                     'bg-danger'
+                   when 75..89
+                     'bg-warning'
+                   else
+                     'bg-success'
+                   end
+    payload
   end
 
   def display_time(timestamp)

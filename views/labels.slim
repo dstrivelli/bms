@@ -1,16 +1,29 @@
-div#label-menu.container
-  div#image-dropdown.btn-group
-    #image-text.button.btn.btn-primary type='button' Select an image
-    button.btn.btn-primary.dropdown-toggle.dropdown-toggle-split data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'
-      span.sr-only Toggle Dropdown
-    .dropdown-menu
-      - @images.each do |image|
-        a.dropdown-item href="javascript:getTags('#{image}')" = image
-
-  div#tag-dropdown.btn-group
-    #tag-text.button.btn.btn-primary type='button' No image selected.
-    button.btn.btn-primary.dropdown-toggle.dropdown-toggle-split data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'
-      span.sr-only Toggle Dropdown
-    #tags-dropdown.dropdown-menu
-div.container
-  #label-output
+- if @repos
+  div class='row d-flex justify-content-center mb-3'
+    div class='btn-group' role='group'
+      - @repos.each do |repo|
+        a class="btn btn-primary #{active?('repo', repo)}" role='button' href="/labels/#{repo}"
+          = repo
+- if @images_with_tags
+  div class='row d-flex justify-content-center'
+    div class='col-10'
+      div id='labelsTree' class='treeview border'
+        h6 class='pt-3 pl-3' Images
+        hr
+        ul class='mb-1 pl-3 pb-2'
+          - @images_with_tags.each do |img, tags|
+            li
+              i> class='fas fa-angle-right rotate'
+              span = img
+              - if tags
+                ul class='nested'
+                  - tags.each do |tag, labels|
+                    li
+                      i> class='fas fa-angle-right rotate'
+                      span = tag
+                      ul class='nested'
+                        - labels.each do |key, value|
+                          li
+                            span = "#{key} = #{value}"
+- else
+  p No repositories configured.

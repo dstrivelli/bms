@@ -35,18 +35,19 @@ function processEmailError(xhr, status, error) {
   document.getElementById('flashes').innerHTML = xhr.responseText;
 }
 
-function getTags(image) {
+function getImages(repo) {
   $.ajax({
     type: 'GET',
     dataType: 'json',
-    url: '/labels/tags',
-    data: {image: image},
+    url: '/labels/images',
+    data: {repo: repo},
     success: function(data) {
-      $('#image-text').text(image);
-      $('#tag-text').text('Select a tag');
-      $('#tags-dropdown').empty();
-      $.each(data, function(idx, tag) {
-        $('#tags-dropdown').append($('<a></a>').attr('href', 'javascript:getLabels("'+image+'", "'+tag+'")').attr('class', 'dropdown-item').text(tag));
+      $('#repo-btn').html(repo);
+      $('#image-btn').html('Select an image');
+      $('#image-dropdown').empty();
+      $('#tag-dropdown').empty();
+      $.each(data, function(idx, image) {
+        $('#image-dropdown').append($('<a></a>').attr('href', 'javascript:getTags("'+repo+'", "'+image+'")').attr('class', 'dropdown-item').text(image));
       });
     },
     error: function(data) {
@@ -55,12 +56,32 @@ function getTags(image) {
   })
 }
 
-function getLabels(image, tag) {
+function getTags(repo, image) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'json',
+    url: '/labels/tags',
+    data: {repo: repo, image: image},
+    success: function(data) {
+      $('#image-btn').html(image);
+      $('#tag-btn').html('Select a tag');
+      $('#tags-dropdown').empty();
+      $.each(data, function(idx, tag) {
+        $('#tags-dropdown').append($('<a></a>').attr('href', 'javascript:getLabels("'+repo+'", "'+image+'", "'+tag+'")').attr('class', 'dropdown-item').text(tag));
+      });
+    },
+    error: function(data) {
+      alert('Error: ' + data);
+    }
+  })
+}
+
+function getLabels(repo, image, tag) {
   $.ajax({
     type: 'GET',
     dataType: 'html',
     url: '/labels/labels',
-    data: {image: image, tag: tag},
+    data: {repo: repo, image: image, tag: tag},
     success: function(data) {
       $('#tag-text').text(tag);
       $('#label-output').html(data);
@@ -69,4 +90,15 @@ function getLabels(image, tag) {
       alert('Error: ' + textStatus);
     }
   })
+}
+
+function clrRepos() {
+  $('#repo-prod').removeClass('active');
+  $('#repo-stage').removeClass('active');
+  $('#repo-dev').removeClass('active');
+}
+
+function changeRepo(tier) {
+  clrRepos();
+  $('#repo-' + tier).addClass('active');
 }
