@@ -11,6 +11,9 @@ require 'bms/db'
 
 env = ENV.fetch('APP_ENV', 'development')
 
+# Sync STDOUT so we see msgs in foreman
+STDOUT.sync = true
+
 # Load some dev stuff
 if env == 'development'
   begin

@@ -74,6 +74,10 @@ module BMS
     end
     singleton_class.send(:alias_method, :set, :[]=)
 
+    def self.delete(key)
+      @db.delete(key) if key?(key)
+    end
+
     def self.save_result(result)
       validate_db
       @db.lock do

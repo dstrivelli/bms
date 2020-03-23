@@ -21,12 +21,27 @@ require 'pry'
 require 'rack/test'
 require 'rspec'
 require 'rspec-html-matchers'
+require 'webmock/rspec'
+require 'vcr'
+
+# Configure VCR to record http requests
+VCR.configure do |c|
+  c.cassette_library_dir = File.expand_path 'fixtures/cassettes', __dir__
+  c.hook_into :webmock
+  c.default_cassette_options = { record: :new_episodes }
+  c.configure_rspec_metadata!
+end
 
 # Load in all our needed matchers
-RSpec.configure do |config|
-  config.include Rack::Test::Methods
-  config.include RSpecHtmlMatchers
-  config.include Mail::Matchers
+RSpec.configure do |c|
+  # Allow only expect syntax
+  c.expect_with :rspec do |expectations|
+    expectations.syntax = :expect
+  end
+  # Include matchers
+  c.include Rack::Test::Methods
+  c.include RSpecHtmlMatchers
+  c.include Mail::Matchers
 end
 
 RSpec::Matchers.define(:redirect_to) do |url|
@@ -59,3 +74,6 @@ Logging.logger.root.level = Settings&.log_level || :warn
 Mail.defaults do
   delivery_method :test
 end
+
+# Disable external http requests
+WebMock.disable_net_connect!(allow_localhost: true)

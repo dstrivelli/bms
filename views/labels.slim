@@ -4,6 +4,10 @@
       - @repos.each do |repo|
         a class="btn btn-primary #{active?('repo', repo)}" role='button' href="/labels/#{repo}"
           = repo
+
+- if @error
+  p = @error
+
 - if @images_with_tags
   div class='row d-flex justify-content-center'
     div class='col-10'
@@ -25,5 +29,3 @@
                         - labels.each do |key, value|
                           li
                             span = "#{key} = #{value}"
-- else
-  p No repositories configured.

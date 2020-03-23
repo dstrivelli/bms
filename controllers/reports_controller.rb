@@ -98,7 +98,7 @@ class ReportsController < ApplicationController
     if (@report = BMS::DB.result(timestamp))
       @header = 'BMS Health Report'
       @caption = display_time(@report.timestamp)
-      slim :report_with_email_button
+      slim :tabbed_report
     else
       slim 'p No result found.'
     end

@@ -29,6 +29,8 @@ group :development do
   gem 'pry-remote'
   gem 'pry-rescue'
   gem 'sinatra-contrib'     # Gives us access to sinatra/reloader
+  gem 'vcr'                 # Record and playback http requests during testing
+  gem 'webmock'             # Mock http requests during testing
 end
 
 group :test do

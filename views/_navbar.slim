@@ -1,22 +1,25 @@
-nav class='navbar fixed-top navbar-expand-lg navbar-dark bg-dark'
+nav class='navbar navbar-expand-lg fixed-top navbar-dark bg-dark'
   a> class='navbar-brand' href='/'
     i> class='fas fa-home'
     | BMS
   button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarContent' aria-controls='navbarContent' aria-expanded='false' aria-label='Toggle navigation'
     span class='navbar-toggler-icon'
-  div class='collapse navbar-collapse' id='navbarContent'
+  div id='navbarContent' class='collapse navbar-collapse'
     ul class='navbar-nav mr-auto'
-      li class="nav-item dropdown #{active_app?('reports')}"
-        a class='nav-link dropdown-toggle' href='#' id='navbarReports' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' Reports
-        div class='dropdown-menu' aria-labelledby='navbarReports'
-          a class='dropdown-item' href='/reports/latest' Latest
-          a class='dropdown-item' href='/reports/list' List
+      li class='nav-item dropdown'
+        a class='nav-link dropdown-toggle' href='/reports' id='navbarReports' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'
+          | Reports
+        div class='dropdown-menu dropdown-primary' aria-labelledby='navbarReports'
+          a class='dropdown-item' href='/reports/latest'
+            | Latest
+          a class='dropdown-item' href='/reports/list'
+            | List
           - if @latest_reports and @latest_reports.length > 0
             div class='dropdown-divider'
             h6 class='dropdown-header' Recent Reports
             - @latest_reports.each do |timestamp|
               a class='dropdown-item' href="/reports/#{timestamp}" = display_time(timestamp)
-      li class="nav-item dropdown #{active_app?('labels')}"
+      li class='nav-item dropdown'
         a class='nav-link dropdown-toggle' href='#' id='navbarTools' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' Tools
         div class='dropdown-menu' aria-labelledby='navbarTools'
           a class='dropdown-item' href='/labels' Labels

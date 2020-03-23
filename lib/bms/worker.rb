@@ -28,8 +28,8 @@ module BMS
             @logger.info 'Refreshing result data.'
             elapsed = Benchmark.measure do
               @last_result = refresh
-              NexusRepo.repos.each do |tier|
-                refresh_labels(tier, use_cache: false)
+              NexusRepo.repos.each do |repo|
+                refresh_labels(repo)
               end
             end
             @logger.info "Completed refresh in #{elapsed.real.round(2)} seconds."
@@ -159,10 +159,9 @@ module BMS
       DB.save_result(results)
     end
 
-    def refresh_labels(tier)
-      nexus = NexusRepo.new(tier)
-      result = nexus.images_with_tags
-      BMS::DB.set["#{tier}-labels"] = result
+    def refresh_labels(repo)
+      result = NexusRepo.new(repo).images_with_tags(cache: :skip)
+      BMS::DB["#{repo}-labels"] = result
     end
 
     private

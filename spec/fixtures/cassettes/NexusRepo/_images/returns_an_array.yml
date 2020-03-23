@@ -1,0 +1,47 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://container-registry.prod8.bip.va.gov/v2/_catalog
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty/1.15.8.2
+      Date:
+      - Mon, 23 Mar 2020 11:55:30 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - Accept-Encoding
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      Content-Security-Policy:
+      - sandbox allow-forms allow-modals allow-popups allow-presentation allow-scripts
+        allow-top-navigation
+      Docker-Distribution-Api-Version:
+      - registry/2.0
+    body:
+      encoding: ASCII-8BIT
+      string: '{"repositories":["bip-bpds","bip-bpds-dynamodb-verify","bip-bss-iam-webagent","bip-bss-idpproxy","bip-bss-keycloak","bip-docgen-content","bip-docgen-db-config","bip-docgen-git2consul","bip-docgen-svc","bip-docgen-ui","bip-exam-destination","bip-ibs-icp-data-service","bip-ibs-icp-service","bip-ibs-ins-data-service","bip-ibs-ins-service","bip-ngl","bip-pacman/bip-pacman-service-legacy","bip-vasrd","bip-vbmsc/vbmsc","bip-vetservices-claims","bip/git2consul","bip/jenkins","bms","ccps/ccps","fluxcd/flux","fluxcd/helm-operator","mbms-prod/mbms-apache-reverse-proxy","mbms-prod/mbms-help","mbms-prod/mbms-service","mbms-prod/mbms-ui","mbms-prodtest/mbms-apache-reverse-proxy","mbms-prodtest/mbms-help","mbms-prodtest/mbms-service","mbms-prodtest/mbms-ui"]}'
+    http_version: null
+  recorded_at: Mon, 23 Mar 2020 11:55:31 GMT
+recorded_with: VCR 5.1.0

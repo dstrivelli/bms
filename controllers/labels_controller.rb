@@ -18,7 +18,13 @@ class LabelsController < ApplicationController
     @scripts = ['/js/labels.js']
     @repos = NexusRepo.repos
     @repo = repo || @repos.first
-    @images_with_tags = NexusRepo.new(@repo).images_with_tags
+    begin
+      @images_with_tags = NexusRepo.new(@repo).images_with_tags(cache: :force)
+    rescue CacheDataNotFoundError => e
+      raise if settings.development?
+
+      @error = e.message
+    end
     slim :labels
   end
 end
