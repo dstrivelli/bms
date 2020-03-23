@@ -1,26 +1,36 @@
 doctype html
-html
+html lang='en'
   head
     title BIP Monitoring System
-    meta charset="utf-8"
-    link rel="stylesheet" media="screen" href="/css/reset.css"
-    link rel="stylesheet" media="screen" href="/css/styles.css"
-    script src="/jquery-3.4.1.min.js"
-    script src="/scripts.js"
+    meta charset='utf-8'
+    meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
+    link rel='stylesheet' href='/css/font-awesome.all.css'
+    link rel='stylesheet' href='/css/bootstrap.css'
+    link rel='stylesheet' href='/css/mdb.css'
+    link rel='stylesheet' href='/css/styles.css'
+    - if @stylesheets
+      - @stylesheets.each do |stylesheet|
+        link rel='stylesheet' href=stylesheet
+    script src='/js/jquery-3.4.1.min.js'
+    script src='/js/popper.js'
+    script src='/js/bootstrap.js'
+    script src='/js/mdb.js'
+    script src='/js/bms.js'
+    - if @scripts
+      - @scripts.each do |js|
+        script src=js
   body
-    #wrapper
+    == slim :_navbar
+    div id='layout-main' class='container-fluid'
+      #flashes
+        - flash.each do |type, msg|
+          == slim :_alert, locals: { type: type, msg: msg }
       #header
         h1 = @header ? @header : 'BIP Monitoring System'
         - if @caption
           .caption = @caption
         hr
-        .flex-list
-          ul
-            li
-              a href="/result/latest" latest
-            li
-              a href="/results" list
-      #content
+      #content.container
         == yield
       #footer
         hr

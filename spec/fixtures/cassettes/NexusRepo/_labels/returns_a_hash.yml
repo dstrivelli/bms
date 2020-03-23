@@ -1,0 +1,279 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://container-registry.prod8.bip.va.gov/v2/_catalog
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty/1.15.8.2
+      Date:
+      - Mon, 23 Mar 2020 12:31:45 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - Accept-Encoding
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      Content-Security-Policy:
+      - sandbox allow-forms allow-modals allow-popups allow-presentation allow-scripts
+        allow-top-navigation
+      Docker-Distribution-Api-Version:
+      - registry/2.0
+    body:
+      encoding: ASCII-8BIT
+      string: '{"repositories":["bip-bpds","bip-bpds-dynamodb-verify","bip-bss-iam-webagent","bip-bss-idpproxy","bip-bss-keycloak","bip-docgen-content","bip-docgen-db-config","bip-docgen-git2consul","bip-docgen-svc","bip-docgen-ui","bip-exam-destination","bip-ibs-icp-data-service","bip-ibs-icp-service","bip-ibs-ins-data-service","bip-ibs-ins-service","bip-ngl","bip-pacman/bip-pacman-service-legacy","bip-vasrd","bip-vbmsc/vbmsc","bip-vetservices-claims","bip/git2consul","bip/jenkins","bms","ccps/ccps","fluxcd/flux","fluxcd/helm-operator","mbms-prod/mbms-apache-reverse-proxy","mbms-prod/mbms-help","mbms-prod/mbms-service","mbms-prod/mbms-ui","mbms-prodtest/mbms-apache-reverse-proxy","mbms-prodtest/mbms-help","mbms-prodtest/mbms-service","mbms-prodtest/mbms-ui"]}'
+    http_version: null
+  recorded_at: Mon, 23 Mar 2020 12:31:45 GMT
+- request:
+    method: get
+    uri: https://container-registry.prod8.bip.va.gov/v2/_catalog
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty/1.15.8.2
+      Date:
+      - Mon, 23 Mar 2020 12:31:45 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - Accept-Encoding
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      Content-Security-Policy:
+      - sandbox allow-forms allow-modals allow-popups allow-presentation allow-scripts
+        allow-top-navigation
+      Docker-Distribution-Api-Version:
+      - registry/2.0
+    body:
+      encoding: ASCII-8BIT
+      string: '{"repositories":["bip-bpds","bip-bpds-dynamodb-verify","bip-bss-iam-webagent","bip-bss-idpproxy","bip-bss-keycloak","bip-docgen-content","bip-docgen-db-config","bip-docgen-git2consul","bip-docgen-svc","bip-docgen-ui","bip-exam-destination","bip-ibs-icp-data-service","bip-ibs-icp-service","bip-ibs-ins-data-service","bip-ibs-ins-service","bip-ngl","bip-pacman/bip-pacman-service-legacy","bip-vasrd","bip-vbmsc/vbmsc","bip-vetservices-claims","bip/git2consul","bip/jenkins","bms","ccps/ccps","fluxcd/flux","fluxcd/helm-operator","mbms-prod/mbms-apache-reverse-proxy","mbms-prod/mbms-help","mbms-prod/mbms-service","mbms-prod/mbms-ui","mbms-prodtest/mbms-apache-reverse-proxy","mbms-prodtest/mbms-help","mbms-prodtest/mbms-service","mbms-prodtest/mbms-ui"]}'
+    http_version: null
+  recorded_at: Mon, 23 Mar 2020 12:31:46 GMT
+- request:
+    method: get
+    uri: https://container-registry.prod8.bip.va.gov/v2/bip-bpds/tags/list
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty/1.15.8.2
+      Date:
+      - Mon, 23 Mar 2020 12:32:40 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - Accept-Encoding
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      Content-Security-Policy:
+      - sandbox allow-forms allow-modals allow-popups allow-presentation allow-scripts
+        allow-top-navigation
+      Docker-Distribution-Api-Version:
+      - registry/2.0
+    body:
+      encoding: ASCII-8BIT
+      string: '{"name":"bip-bpds","tags":["perf-1.0.0-17-10","perf-1.1.0-21-12","preprod-1.1.0-21-12","prod-1.0.0-17-10","prod-1.1.0-21-12","prodtest-1.0.0-17-10","prodtest-1.1.0-21-12"]}'
+    http_version: null
+  recorded_at: Mon, 23 Mar 2020 12:32:41 GMT
+- request:
+    method: get
+    uri: https://container-registry.prod8.bip.va.gov/v2/bip-bpds/manifests/perf-1.0.0-17-10
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - openresty/1.15.8.2
+      Date:
+      - Mon, 23 Mar 2020 12:32:41 GMT
+      Content-Type:
+      - application/vnd.docker.distribution.manifest.v1+json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+      Content-Security-Policy:
+      - sandbox allow-forms allow-modals allow-popups allow-presentation allow-scripts
+        allow-top-navigation
+      Last-Modified:
+      - Fri, 13 Dec 2019 15:36:04 GMT
+      Docker-Distribution-Api-Version:
+      - registry/2.0
+    body:
+      encoding: UTF-8
+      string: |-
+        {
+          "schemaVersion" : 1,
+          "name" : "bip-bpds",
+          "tag" : "perf-1.0.0-17-10",
+          "architecture" : "amd64",
+          "fsLayers" : [ {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:2a244006353a625d1b1a5bfa6d5162cff0124dd6af0042af320c623729d608a5"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:4bc402a00dfed189b43794282aaa5d84a3b9b548bc81d901a5a2c85721c855de"
+          }, {
+            "blobSum" : "sha256:2cf01472420269093f2df54934448c1897eed7a8f0ec8f2056b6d67cb012fb78"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:cfcc996af805c1a734f60578932d6136bf727650456a1636aaacff6f2733a80c"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:a360a17c9cab11fa222d7fd12996ae2581bc3372ec55a4ac3d670dba2961993b"
+          }, {
+            "blobSum" : "sha256:a0c934d2565ddc9598089e06006d5a358db0b659c6a23c7619c04aa145966c10"
+          }, {
+            "blobSum" : "sha256:29e8ef0e3340ebc06839633b3f6fcdf562469e5c66973c99b46330d426cbf6c1"
+          }, {
+            "blobSum" : "sha256:c36604fa79391bd9451d544c5503da6b56125d5178f56b2b1559d02055b708d1"
+          }, {
+            "blobSum" : "sha256:a3ed95caeb02ffe68cdd9fd84406680ae93d633cb16422d00e8a7c22955b46d4"
+          }, {
+            "blobSum" : "sha256:7448db3b31eb523ef8dd3651601d4c2abad0d7a6a12b9c9e85f55ed9dad0ab8e"
+          } ],
+          "history" : [ {
+            "v1Compatibility" : "{\"created\":\"2019-12-05T18:47:56.994091694Z\",\"docker_version\":\"18.05.0-ce\",\"architecture\":\"amd64\",\"config\":{\"Hostname\":\"33842653d6db\",\"Domainname\":\"\",\"User\":\"\",\"AttachStdin\":false,\"AttachStdout\":false,\"AttachStderr\":false,\"Tty\":false,\"OpenStdin\":false,\"StdinOnce\":false,\"Env\":[\"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\"LANG=C.UTF-8\",\"JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64\",\"JAVA_VERSION=8u111\",\"JAVA_DEBIAN_VERSION=8u111-b14-2~bpo8+1\",\"CA_CERTIFICATES_JAVA_VERSION=20140324\"],\"Cmd\":null,\"ArgsEscaped\":true,\"Image\":\"sha256:4f8a5aa892c4040083b84b11807f78966583095a162a5f07499b7f6686581c6e\",\"Volumes\":{\"/tmp\":{}},\"WorkingDir\":\"\",\"Entrypoint\":[\"java\",\"-Djava.security.egd=file:/dev/./urandom\",\"-jar\",\"/bip-bpds.jar\"],\"OnBuild\":[],\"Labels\":{\"config.skipFortify\":\"false\",\"config.skipFunctionalTests\":\"false\",\"config.skipPerformanceTests\":\"false\",\"config.skipSonar\":\"false\",\"config.skipTests\":\"false\"}},\"container\":\"e1ce4b64a6be59062cb75eb7b8f9e3fed0db50e74876492800293c16a60233a8\",\"os\":\"linux\",\"container_config\":{\"Hostname\":\"33842653d6db\",\"Domainname\":\"\",\"User\":\"\",\"AttachStdin\":false,\"AttachStdout\":false,\"AttachStderr\":false,\"Tty\":false,\"OpenStdin\":false,\"StdinOnce\":false,\"Env\":[\"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\"LANG=C.UTF-8\",\"JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64\",\"JAVA_VERSION=8u111\",\"JAVA_DEBIAN_VERSION=8u111-b14-2~bpo8+1\",\"CA_CERTIFICATES_JAVA_VERSION=20140324\"],\"Cmd\":[\"/bin/sh\",\"-c\",\"#(nop) \",\"LABEL config.skipFortify=false\"],\"ArgsEscaped\":true,\"Image\":\"sha256:4f8a5aa892c4040083b84b11807f78966583095a162a5f07499b7f6686581c6e\",\"Volumes\":{\"/tmp\":{}},\"WorkingDir\":\"\",\"Entrypoint\":[\"java\",\"-Djava.security.egd=file:/dev/./urandom\",\"-jar\",\"/bip-bpds.jar\"],\"OnBuild\":[],\"Labels\":{\"config.skipFortify\":\"false\",\"config.skipFunctionalTests\":\"false\",\"config.skipPerformanceTests\":\"false\",\"config.skipSonar\":\"false\",\"config.skipTests\":\"false\"}},\"id\":\"abcbd96b80683594eea17601400f5d21c9f08b588ccd9d5763a2a3ee235c6f9e\",\"parent\":\"cee6a5a8800967c3b1c6e87fd20155668c383791636b3a95352d9d4c8d1949af\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"cee6a5a8800967c3b1c6e87fd20155668c383791636b3a95352d9d4c8d1949af\",\"created\":\"2019-12-05T18:47:56.893950865Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  LABEL config.skipSonar=false\"},\"parent\":\"a0cb28543809ad8dc27dbc2902bc4725c69b1da9c4c4ff13cbe189b72951d79e\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"a0cb28543809ad8dc27dbc2902bc4725c69b1da9c4c4ff13cbe189b72951d79e\",\"created\":\"2019-12-05T18:47:56.803275475Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  LABEL config.skipPerformanceTests=false\"},\"parent\":\"41107e63ee76e9b67aacc5b653db76a03c80309e99f45f6b1be68fcc62f87911\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"41107e63ee76e9b67aacc5b653db76a03c80309e99f45f6b1be68fcc62f87911\",\"created\":\"2019-12-05T18:47:56.696950401Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  LABEL config.skipFunctionalTests=false\"},\"parent\":\"479b47fc9498cfdffed98382e41fbf0c3c965474f3fa106870fd9ba6e9e7642b\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"479b47fc9498cfdffed98382e41fbf0c3c965474f3fa106870fd9ba6e9e7642b\",\"created\":\"2019-12-05T18:47:56.574959545Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  LABEL config.skipTests=false\"},\"parent\":\"2d36694bdaba4f09bd2b7e49cfa21476dee0dedc394fe7b45c8ceaaa1e8ec5d8\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"2d36694bdaba4f09bd2b7e49cfa21476dee0dedc394fe7b45c8ceaaa1e8ec5d8\",\"created\":\"2019-12-05T18:47:56.486061574Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENTRYPOINT [\\\"java\\\" \\\"-Djava.security.egd=file:/dev/./urandom\\\" \\\"-jar\\\" \\\"/bip-bpds.jar\\\"]\"},\"parent\":\"fd8490b85780a77724b99fd73a49d1670a4258fd6e0ebb1bf061ce7624c4c6c0\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"fd8490b85780a77724b99fd73a49d1670a4258fd6e0ebb1bf061ce7624c4c6c0\",\"created\":\"2019-12-05T18:47:55.989984539Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop) ADD file:dea907bc9ac337d16fc806bcb0c9dbd92959c9de34519fc683eac554241ec5b4 in bip-bpds.jar \"},\"parent\":\"2cf3e79903a897cc722a285b3acaaba026f360724a22ab73a71cd20ebb00ccac\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"2cf3e79903a897cc722a285b3acaaba026f360724a22ab73a71cd20ebb00ccac\",\"created\":\"2019-12-05T18:47:55.272221386Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ARG JAR_FILE=target/bip-bpds.jar\"},\"parent\":\"814e26443ed2954e62ed7fde219d8a20b7a09637367a0c9da2dfda51adb37f1b\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"814e26443ed2954e62ed7fde219d8a20b7a09637367a0c9da2dfda51adb37f1b\",\"created\":\"2019-12-05T18:47:55.181981575Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  VOLUME [/tmp]\"},\"parent\":\"f289a36b80b234a96927adc984a6008dd1c89f101e564834c38e530a2a0cb9dc\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"f289a36b80b234a96927adc984a6008dd1c89f101e564834c38e530a2a0cb9dc\",\"created\":\"2017-01-17T00:52:54.890877145Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c /var/lib/dpkg/info/ca-certificates-java.postinst configure\"},\"parent\":\"8377153200355339b6560cfee524b25949aacceee5f858338a31e0ec9d8721fe\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"8377153200355339b6560cfee524b25949aacceee5f858338a31e0ec9d8721fe\",\"created\":\"2017-01-17T00:52:53.062156474Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c set -x \\t&& apt-get update \\t&& apt-get install -y \\t\\topenjdk-8-jdk=\\\"$JAVA_DEBIAN_VERSION\\\" \\t\\tca-certificates-java=\\\"$CA_CERTIFICATES_JAVA_VERSION\\\" \\t&& rm -rf /var/lib/apt/lists/* \\t&& [ \\\"$JAVA_HOME\\\" = \\\"$(docker-java-home)\\\" ]\"},\"parent\":\"5baed12899ca7233a8467ca0c5c29fca9c3b2d141fffa1d6302a41846ff2f838\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"5baed12899ca7233a8467ca0c5c29fca9c3b2d141fffa1d6302a41846ff2f838\",\"created\":\"2017-01-17T00:51:50.743926212Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENV CA_CERTIFICATES_JAVA_VERSION=20140324\"},\"parent\":\"a6afe4b33d477cb36579768002a971bf4d30f1586931c890ce8356ffcbdf2266\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"a6afe4b33d477cb36579768002a971bf4d30f1586931c890ce8356ffcbdf2266\",\"created\":\"2017-01-17T00:51:50.391717354Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENV JAVA_DEBIAN_VERSION=8u111-b14-2~bpo8+1\"},\"parent\":\"2eb44fddb54f6cd7af85b4aa49245e1890d462ab7b39781c58b18c6fd7d78d8b\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"2eb44fddb54f6cd7af85b4aa49245e1890d462ab7b39781c58b18c6fd7d78d8b\",\"created\":\"2017-01-17T00:51:50.099715912Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENV JAVA_VERSION=8u111\"},\"parent\":\"bae064fa0df6672c7380352d85d84009f01cf2139e10671a91c1693a66983485\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"bae064fa0df6672c7380352d85d84009f01cf2139e10671a91c1693a66983485\",\"created\":\"2017-01-17T00:51:49.822140353Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64\"},\"parent\":\"c81d0266a18123b0782f949a9757a17afe47d8070e13963c2fa2089b04ab46bc\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"c81d0266a18123b0782f949a9757a17afe47d8070e13963c2fa2089b04ab46bc\",\"created\":\"2017-01-17T00:51:49.52423661Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c { \\t\\techo '#!/bin/sh'; \\t\\techo 'set -e'; \\t\\techo; \\t\\techo 'dirname \\\"$(dirname \\\"$(readlink -f \\\"$(which javac || which java)\\\")\\\")\\\"'; \\t} > /usr/local/bin/docker-java-home \\t&& chmod +x /usr/local/bin/docker-java-home\"},\"parent\":\"2054f12dd59a533643b5b65635b10b539be38ea9d0fde4fa9e39bcf541627045\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"2054f12dd59a533643b5b65635b10b539be38ea9d0fde4fa9e39bcf541627045\",\"created\":\"2017-01-17T00:51:48.563377618Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  ENV LANG=C.UTF-8\"},\"parent\":\"412fe5e20f85f6653f9ee1318c99bb66d4ed77db9c277c543dfa2db3f5ae2524\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"412fe5e20f85f6653f9ee1318c99bb66d4ed77db9c277c543dfa2db3f5ae2524\",\"created\":\"2017-01-17T00:51:48.199853506Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c echo 'deb http://deb.debian.org/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list\"},\"parent\":\"c99fc060768fd5a5a13493da8ef21e99e28b46c740cb4d43928be14f74eb4795\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"c99fc060768fd5a5a13493da8ef21e99e28b46c740cb4d43928be14f74eb4795\",\"created\":\"2017-01-17T00:49:51.939655817Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c apt-get update && apt-get install -y --no-install-recommends \\t\\tbzip2 \\t\\tunzip \\t\\txz-utils \\t&& rm -rf /var/lib/apt/lists/*\"},\"parent\":\"bad17efea438922414e8976066ce2618b3d5d2f5c77d2f04e4943b8c7239e26f\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"bad17efea438922414e8976066ce2618b3d5d2f5c77d2f04e4943b8c7239e26f\",\"created\":\"2017-01-17T00:01:07.867997465Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c apt-get update && apt-get install -y --no-install-recommends \\t\\tbzr \\t\\tgit \\t\\tmercurial \\t\\topenssh-client \\t\\tsubversion \\t\\t\\t\\tprocps \\t&& rm -rf /var/lib/apt/lists/*\"},\"parent\":\"63b9842476272fe4d04416ed2463573d1d4345da092f94cad14a043bcec8538e\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"63b9842476272fe4d04416ed2463573d1d4345da092f94cad14a043bcec8538e\",\"created\":\"2017-01-17T00:00:45.363077258Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c apt-get update && apt-get install -y --no-install-recommends \\t\\tca-certificates \\t\\tcurl \\t\\twget \\t&& rm -rf /var/lib/apt/lists/*\"},\"parent\":\"20bb9374963e85680b5e1130bd729757c6a7486b97eb03d6dd510f4956ae6995\"}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"20bb9374963e85680b5e1130bd729757c6a7486b97eb03d6dd510f4956ae6995\",\"created\":\"2017-01-16T20:35:16.587175871Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop)  CMD [\\\"/bin/bash\\\"]\"},\"parent\":\"0ff63270feec2a7abac22f7ad5df196821de7e9eb611b5494f0501ef07f15d10\",\"throwaway\":true}"
+          }, {
+            "v1Compatibility" : "{\"id\":\"0ff63270feec2a7abac22f7ad5df196821de7e9eb611b5494f0501ef07f15d10\",\"created\":\"2017-01-16T20:35:09.371844927Z\",\"Cmd\":{\"container_config\":\"/bin/sh -c #(nop) ADD file:89ecb642d662ee7edbb868340551106d51336c7e589fdaca4111725ec64da957 in / \"}}"
+          } ]
+        }
+    http_version: null
+  recorded_at: Mon, 23 Mar 2020 12:32:42 GMT
+recorded_with: VCR 5.1.0

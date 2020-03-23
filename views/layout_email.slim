@@ -3,5 +3,7 @@ html
   head
     title @subject
     meta charset="utf-8"
+    link rel='stylesheet' href='/css/bootstrap-4.4.1.min.css'
   body
+    h1 = "BMS Health Report for #{display_time(@report[:timestamp])}"
     == yield

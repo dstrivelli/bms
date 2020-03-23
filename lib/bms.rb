@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Load any BMS classes we need for everyone
+require 'bms/db'
 require 'bms/result'
 
 # The default namespace for BMS

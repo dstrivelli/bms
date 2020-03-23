@@ -1,8 +1,11 @@
 h2 Kubernetes Nodes
-== slim :_table, locals: { table: @result[:nodes] }
+== slim :_table, locals: { table: @report[:nodes] }
+hr
 h2 Unhealthy Pods
-== slim :_table, locals: { table: @result[:unhealthy_pods] }
+== slim :_table, locals: { table: @report[:unhealthy_pods] }
+hr
 h2 Pod Restarts
-== slim :_table, locals: { table: @result[:pod_restarts] }
+== slim :_table, locals: { table: @report[:pod_restarts] }
+hr
 h2 URIs
-== slim :_table, locals: { table: @result[:uris] }
+== slim :_table, locals: { table: @report[:uris] }

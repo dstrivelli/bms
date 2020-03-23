@@ -8,7 +8,14 @@ $stdout.sync = true
 require 'config'
 require 'daybreak'
 require 'fileutils'
+require 'bms'
 require 'bms/worker'
+
+# Load all our application requirements
+%w[models helpers controllers].each do |dir|
+  $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
+  Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }
+end
 
 # Try to load Pry if it's available
 begin
@@ -38,6 +45,13 @@ begin
     Config.setting_files(File.join(__dir__, 'config'), env)
   )
   Settings.env = env
+  # Initialize logging
+  Logging.logger.root.appenders = Logging.appenders.stdout # (layout: Logging.layouts.basic)
+  Logging.logger.root.level = Settings&.log_level || :warn
+  # Example of how to fine tune logging
+  # Logging.logger['BMS::Worker'].level = :info
+
+  BMS::DB.load(Settings.db)
 
   # Start worker
   BMS::Worker.new

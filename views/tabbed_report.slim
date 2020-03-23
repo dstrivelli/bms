@@ -1,0 +1,25 @@
+- unless defined?(no_email)
+  == slim :_email_modal
+ul id='tabbed-report' class='nav nav-tabs' role='tablist'
+  li class='nav-item'
+    a id='nodes-tab' class='nav-link active' data-toggle='tab' href='#nodes' role='tab' aria-controls='nodes' aria-selected='true'
+      | Kubernetes Nodes
+  li class='nav-item'
+    a id='unhealthy-pods-tab' class='nav-link' data-toggle='tab' href='#unhealthy-pods' role='tab' aria-controls='unhealthy-pods' aria-selected='false'
+      | Unhealthy Pods (#{@report[:unhealthy_pods].length})
+  li class='nav-item'
+    a id='pod-restarts-tab' class='nav-link' data-toggle='tab' href='#pod-restarts' role='tab' aria-controls='pod-restarts' aria-selected='false'
+      | Pod Restarts
+  li class='nav-item'
+    a id='uris-tab' class='nav-link' data-toggle='tab' href='#uris' role='tab' aria-controls='uris' aria-selected='false'
+      | URIs
+
+div id='tab-contents' class='tab-content'
+  div id='nodes' class='tab-pane fade show active' role='tabpanel' aria-labelledby='nodes-tab'
+    == slim :_table, locals: { table: @report[:nodes] }
+  div id='unhealthy-pods' class='tab-pane fade' role='tabpanel' aria-labelledby='unhealthy-pods-tab'
+    == slim :_table, locals: { table: @report[:unhealthy_pods] }
+  div id='pod-restarts' class='tab-pane fade' role='tabpanel' aria-labelledby='pod-restarts-tab'
+    == slim :_table, locals: { table: @report[:pod_restarts] }
+  div id='uris' class='tab-pane fade' role='tabpanel' aria-labelledby='uris-tab'
+    == slim :_table, locals: { table: @report[:uris] }

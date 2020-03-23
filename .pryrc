@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# $LOAD_PATH << File.join(__dir__, 'lib')
+$LOAD_PATH << File.join(__dir__, 'lib')
 # require 'bms'
 
 Pry.config.exception_handler = proc do |output, exception, _pry_|

@@ -1,7 +1,0 @@
-- if @results.empty?
-  p There are no results in the database.
-- else
-  ul
-    - @results.each do |result|
-      li
-        a.timestamp time=result href="/result/#{result}" = Time.at(result).strftime('%B %e, %Y %l:%M%P')
