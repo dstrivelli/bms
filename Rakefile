@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-$LOAD_PATH << File.join(__dir__, 'lib')
-
 require 'English'
 require 'fileutils'
 require 'rake'
-require 'bms/version'
+require 'pry'
+
+require_relative 'version'
 
 LOCAL_YAML    = 'config/environments/production.yml'
 HELM_YAML     = 'charts/bms/config/production.yml'
@@ -25,6 +25,29 @@ begin
     t.options = ['--display-cop-names']
   end
 rescue LoadError
+end
+
+desc 'Load authentication tokens for testing'
+task :setup, [:username, :password] do |t, args|
+  require 'faraday'
+  require 'yaml'
+  config = YAML.safe_load(File.read(File.expand_path('~/.kube/config')))
+  token = config['users'].first['user']['auth-provider']['config']['id-token']
+  File.open('local/k8_token', 'w') { |file| file.puts token }
+  oauth_url = URI('https://oauth.prod8.bip.va.gov/')
+  response = Faraday.get oauth_url.merge('/oauth2/start?rd=https://kibana.prod8.bip.va.gov/')
+  csrf_cookie = response.headers['set-cookie'].split(';', 2).first
+  dex_url = URI(response.headers['location'])
+  response = Faraday.get(dex_url)
+  auth = { 'login' => args.username, 'password' => args.password }
+  response = Faraday.post(dex_url.merge(response.headers['location']), auth)
+  raise 'Oauth2 Login Failed.' unless response.status == 303
+  response = Faraday.get(dex_url.merge(response.headers['location']))
+  response = Faraday.get(response.headers['location']) do |req|
+    req.headers['cookie'] = csrf_cookie
+  end
+  oauth_cookie = /(_oauth2_proxy=[^;]*);/.match(response.headers['set-cookie'])[1]
+  File.open('local/_oauth2_proxy', 'w') { |f| f.puts "#{oauth_cookie};" }
 end
 
 desc 'Build docker image'
@@ -92,4 +115,10 @@ task :deploy do
   helm_yml = Digest::MD5.hexdigest File.read(HELM_YAML)
   local_yml == helm_yml || FileUtils.copy_file(LOCAL_YAML, HELM_YAML, preserve: true)
   `#{HELM} upgrade bms charts/bms --namespace=bms`
+end
+
+desc 'Flush Redis database'
+task :flush do
+  require 'ohm'
+  puts Ohm.flush
 end

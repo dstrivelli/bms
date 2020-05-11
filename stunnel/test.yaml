@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stunnel-test
+spec:
+  containers:
+    - name: stunnel-test
+      image: zanloy/aws-redis-stunnel
+      imagePullPolicy: Always
+      env:
+        - name: STUNNEL_CONNECT
+          value: "master.bms.wd8foa.usgw1.cache.amazonaws.com:6379"

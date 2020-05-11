@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-$LOAD_PATH << File.expand_path('lib', __dir__)
-
 require 'config'
 require 'logging'
 require 'mail'
+require 'ohm'
 require 'sinatra/base'
-
-require 'bms/db'
 
 env = ENV.fetch('APP_ENV', 'development')
 
@@ -40,9 +37,6 @@ Logging.logger.root.level = Settings&.log_level || :warn
 # Example of how to fine tune logging
 # Logging.logger['BMS::Worker'].level = :info
 
-# Initialize the database
-BMS::DB.load(Settings.db)
-
 # Initialize Mail
 mail_defaults = {
   address: 'smtp.va.gov',
@@ -54,8 +48,12 @@ Mail.defaults do
   delivery_method manner, options
 end
 
+# Configure redis
+redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
+Ohm.redis = Redic.new(redis_host)
+
 # Load all our application requirements
-%w[models helpers controllers].each do |dir|
+%w[connectors models helpers controllers].each do |dir|
   $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
   Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }
 end

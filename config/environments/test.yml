@@ -6,10 +6,6 @@ email:
     to: 'corporate.suit@approved.com'
   test: true
 keep_results: 5
-kubernetes:
-  url: https://kubernetes.default.svc
-prometheus:
-  url: http://prod8-prometheus-operator-prometheus.monitoring:9090
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod8-consul.vault:8500/v1/status/leader
@@ -30,5 +26,13 @@ uris:
       473: PERFORMANCE STANDBY
       501: UNINITIALIZED
       503: SEALED
+kubernetes:
+  url: https://kubernetes.default.svc
+nexus:
+  repos:
+    prod: 'https://container-registry.prod8.bip.va.gov/'
+    stage: 'https://container-registry.stage8.bip.va.gov/'
+prometheus:
+  url: http://prod8-prometheus-operator-prometheus.monitoring:9090
 worker:
   sleep: 60

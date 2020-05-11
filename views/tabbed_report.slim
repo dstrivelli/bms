@@ -20,6 +20,6 @@ div id='tab-contents' class='tab-content'
   div id='unhealthy-pods' class='tab-pane fade' role='tabpanel' aria-labelledby='unhealthy-pods-tab'
     == slim :_table, locals: { table: @report[:unhealthy_pods] }
   div id='pod-restarts' class='tab-pane fade' role='tabpanel' aria-labelledby='pod-restarts-tab'
-    == slim :_table, locals: { table: @report[:pod_restarts] }
+    == slim :_table, locals: { table: @report[:restarts] }
   div id='uris' class='tab-pane fade' role='tabpanel' aria-labelledby='uris-tab'
-    == slim :_table, locals: { table: @report[:uris] }
+    == slim :_table, locals: { table: @report[:health_checks] }

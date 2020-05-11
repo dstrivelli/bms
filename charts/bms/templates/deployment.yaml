@@ -42,6 +42,12 @@ spec:
               port: 5000
             initialDelaySeconds: 10
             periodSeconds: 30
+        - name: stunnel
+          image: zanloy/aws-redis-stunnel
+          imagePullPolicy: Always
+          env:
+            - name: STUNNEL_CONNECT
+              value: "master.bms.wd8foa.usgw1.cache.amazonaws.com:6379"
       volumes:
         - name: config-file
           configMap:

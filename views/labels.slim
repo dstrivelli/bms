@@ -8,20 +8,21 @@
 - if @error
   p = @error
 
-- if @images_with_tags
+- if @images
   div class='row d-flex justify-content-center'
     div class='col-10'
       div id='labelsTree' class='treeview border'
         h6 class='pt-3 pl-3' Images
         hr
         ul class='mb-1 pl-3 pb-2'
-          - @images_with_tags.each do |img, tags|
+          - @images.each do |img|
             li
               i> class='fas fa-angle-right rotate'
-              span = img
-              - if tags
+              span
+                = "#{img[:name]} (#{img[:tags].length})"
+              - if img[:tags]
                 ul class='nested'
-                  - tags.each do |tag, labels|
+                  - img[:tags].each do |tag, labels|
                     li
                       i> class='fas fa-angle-right rotate'
                       span = tag

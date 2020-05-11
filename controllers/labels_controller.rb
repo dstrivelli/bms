@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-require 'active_support'
-require 'active_support/core_ext/hash/indifferent_access'
-require 'application_controller'
-require 'nexus_repo'
 require 'httparty'
 require 'json'
 
-REMOTE_DOCKER = 'https://container-registry.prod8.bip.va.gov'
+require 'application_controller'
+require 'nexus_repo'
 
 # Controller for Labels
 class LabelsController < ApplicationController
@@ -16,10 +13,10 @@ class LabelsController < ApplicationController
   # This has to go last because it's such a greedy match
   get '/:repo?' do |repo|
     @scripts = ['/js/labels.js']
-    @repos = NexusRepo.repos
+    @repos = Settings&.nexus&.repos&.keys&.map(&:to_s)
     @repo = repo || @repos.first
     begin
-      @images_with_tags = NexusRepo.new(@repo).images_with_tags(cache: :force)
+      @images = DockerImage.find(repo: @repo).map(&:to_h)
     rescue CacheDataNotFoundError => e
       raise if settings.development?
 

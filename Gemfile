@@ -14,11 +14,14 @@ gem 'json'
 gem 'kubeclient'            # Gather information from Kubernetes
 gem 'logging'
 gem 'mail'                  # Send emails
+gem 'ohm'                   # Use Ohm for Redis backend
+gem 'ohm-contrib'           # Helpful additions to Ohm
 gem 'prometheus-api-client' # Gather information from Prometheus
 gem 'roadie'                # In-line CSS for emails
 gem 'sassc'                 # SASS Compiler
 gem 'sinatra'
 gem 'sinatra-flash'         # Nice alert notifications in pages
+gem 'sinatra-validation'    # Validate params in Sinatra
 gem 'slim'                  # Templating
 gem 'thin'                  # Use Thin for web handler
 
@@ -29,13 +32,15 @@ group :development do
   gem 'pry-remote'
   gem 'pry-rescue'
   gem 'sinatra-contrib'     # Gives us access to sinatra/reloader
-  gem 'vcr'                 # Record and playback http requests during testing
-  gem 'webmock'             # Mock http requests during testing
 end
 
 group :test do
   gem 'capybara'
+  gem 'factory_bot'         # Use FactoryBot to mock objects
+  gem 'ffaker'              # Generate random string/urls/etc
   gem 'rack-test'
   gem 'rspec'
   gem 'rspec-html-matchers'
+  gem 'vcr'                 # Record and playback http requests
+  gem 'webmock'             # Mock http requests
 end

@@ -8,10 +8,13 @@ require 'nexus_repo'
 describe LabelsController do
   let(:app) { LabelsController.new }
 
-  before { load_db }
+  before(:all) do
+    reset_db
+    @images = create_list(:docker_image, 5)
+  end
 
   context 'GET /' do
-    let(:repos) { NexusRepo.repos }
+    let(:repos) { Settings&.nexus&.repos }
     let(:response) { get '/' }
 
     it 'does not raise an error' do
@@ -29,16 +32,17 @@ describe LabelsController do
     it 'assumes first repo if none passed'
     it 'displays the repos in a btn-group' do
       expect(response.body).to have_tag('div', with: { class: 'btn-group' }) do
-        repos.each do |repo|
-          with_tag 'a', with: { class: 'btn', href: "/labels/#{repo}" }, text: repo
+        repos.each do |repo_name, _url|
+          with_tag 'a', with: { class: 'btn', href: "/labels/#{repo_name}" }, text: repo_name
         end
       end
     end
 
     it 'activates the current repo btn' do
-      expect(response.body).to have_tag 'a', with: { class: %w[btn active] }, text: repos.first
+      expect(response.body).to have_tag 'a', with: { class: %w[btn active] }, text: repos.first[0].to_s
     end
 
-    it 'displays the images in a treeview'
+    it 'displays the images'
+    it 'displays the tags'
   end
 end

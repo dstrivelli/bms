@@ -4,8 +4,7 @@ require 'httparty'
 require 'logging'
 
 {
-  CacheDataNotFound: 'No cached data found.',
-  ImageDoesNotExist: 'The images does not exist in the repository',
+  NoNexusReposConfigured: 'No Nexus repos configured in settings.yml',
   TagDoesNotExist: 'The image tag does not exist in the repository'
 }.each do |error_name, error_msg|
   eval <<-EVAL_END # rubocop:disable all
@@ -19,27 +18,20 @@ end
 
 # Model to handle Nexus queries
 class NexusRepo
-  REPOS = {
-    prod: 'https://container-registry.prod8.bip.va.gov/',
-    stage: 'https://container-registry.stage8.bip.va.gov/',
-    dev: 'https://container-registry.dev8.bip.va.gov/'
-  }.freeze
-
-  def self.repos
-    REPOS.keys.map(&:to_s)
-  end
-
   attr_reader :repo, :url
 
-  def initialize(repo = nil)
-    repo ||= REPOS.keys.first.to_s
-    raise 'No such Nexus repo defined.' unless REPOS.key? repo.to_sym
+  def initialize(repo)
+    raise 'Not a valid repo string.' unless %w[String Symbol].include?(repo.class.to_s)
 
-    BMS::DB.load('/tmp/bms.db')
     @logger = Logging::Logger.new(self)
+    @repos = Settings&.nexus&.repos
     @repo = repo
-    @url = REPOS[repo.to_sym]
+    @url = @repos[repo.to_sym]
     @logger.debug "Initialized with connection to #{repo}"
+  end
+
+  def repos
+    @repos.keys
   end
 
   def images
@@ -67,43 +59,16 @@ class NexusRepo
     end
   end
 
-  # All images with the tags and labels nested
-  def images_with_tags(cache: :use)
-    @logger.debug "Fetching all images/tags/labels from #{@repo}..."
-    case cache
-    when :use
-      if BMS::DB.key?(db_key)
-        @logger.debug 'Returning cached results.'
-        return BMS::DB[db_key]
-      else
-        @logger.debug 'No cached results found.'
-      end
-    when :force
-      if BMS::DB.key?(db_key)
-        @logger.debug 'Returning cached results.'
-        return BMS::DB[db_key]
-      else
-        @logger.debug 'No cached results found. Raising error because :forced.'
-        raise CacheDataNotFoundError
-      end
-    when :expire
-      @logger.debug 'Expiring cached results from database.'
-      BMS::DB.delete(db_key)
-    end
+  protected
 
-    @logger.debug 'Pulling data from Nexus repository'
+  # All images with the tags and labels nested
+  def images_with_tags
+    @logger.debug "Fetching all images/tags/labels from #{@repo}..."
     images.each_with_object({}) do |img, list|
       list[img] = tags(image: img).each_with_object({}) do |tag, image_item|
         image_item[tag] = labels(image: img, tag: tag)
       end
     end
-  end
-
-  private
-
-  # The database key used to store cached results
-  def db_key
-    "#{@repo}-labels"
   end
 
   # Call the Nexus api and return the result

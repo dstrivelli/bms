@@ -11,9 +11,9 @@ email:
       - jeffrey.jensen2@va.gov
   manner: smtp
   options:
-    address: 'smtp.va.gov'
-    port: 25
-keep_results: 500
+    address: 'localhost'
+    port: 1025
+keep_results: 5
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod8-consul.vault:8500/v1/status/leader
@@ -39,10 +39,8 @@ kubernetes:
 nexus:
   repos:
     prod: 'https://container-registry.prod8.bip.va.gov/'
-    stage: 'https://container-registry.stage8.bip.va.gov/'
-    dev: 'https://container-registry.dev8.bip.va.gov/'
 prometheus:
   url: http://prod8-prometheus-operator-prometheus.monitoring:9090
-redis: "redis://:tzJryM3zh2AUN3zW@localhost:6379"
+redis: "redis://localhost:6379"
 worker:
   sleep: 900
