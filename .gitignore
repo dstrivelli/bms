@@ -1,5 +1,4 @@
 .env
 *.swp
-*.example
-report.html
 telepresence.log
+/local/

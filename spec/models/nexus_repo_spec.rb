@@ -5,41 +5,29 @@ require_relative '../spec_helper'
 require 'nexus_repo'
 
 describe NexusRepo do
-  let(:first_repo)      { NexusRepo::REPOS.first }
+  let(:first_repo)      { Settings&.nexus&.repos&.first }
   let(:first_repo_name) { first_repo[0].to_s }
   let(:first_repo_url)  { first_repo[1] }
 
-  describe 'self.repos' do
-    it 'returns an array' do
-      expect(NexusRepo.repos).to be_instance_of Array
+  subject { NexusRepo.new(first_repo_name) }
+
+  describe '.initialize' do
+    let(:nexus) { NexusRepo.new(first_repo_name) }
+
+    it 'sets the instance variable @repo' do
+      expect(nexus.repo).to eql(first_repo_name)
+    end
+
+    it 'set the instance variable @url' do
+      expect(nexus.url).to eql(first_repo_url)
     end
   end
 
-  describe '.initialize' do
-    context 'with no repo passed' do
-      let(:nexus) { NexusRepo.new }
+  describe '.repos' do
+    let(:result) { subject.repos }
 
-      it 'defaults to first repo if none given' do
-        expect(nexus.repo).to eql(first_repo_name)
-      end
-    end
-
-    context 'with a valid repo' do
-      let(:sample) do
-        s = NexusRepo::REPOS.keys.sample
-        NexusRepo::REPOS.select { |k, _v| k == s }
-      end
-      let(:sample_name) { sample.first[0] }
-      let(:sample_url) { sample.first[1] }
-      let(:nexus) { NexusRepo.new(sample_name) }
-
-      it 'sets the instance variable @repo' do
-        expect(nexus.repo).to eql(sample_name)
-      end
-
-      it 'set the instance vairable @url' do
-        expect(nexus.url).to eql(sample_url)
-      end
+    it 'returns an array' do
+      expect(result).to be_instance_of Array
     end
   end
 

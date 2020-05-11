@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'bms'
 require 'json'
 require 'mail'
 require 'roadie'
@@ -18,7 +17,12 @@ class ReportsController < ApplicationController
   end
 
   post '/email' do
-    params[:id] = params[:id].to_sym if params[:id].is_a? String
+    # Validation
+    params do
+      required('id')
+      optional('to').value(:string)
+      optional('cc').value(:string)
+    end
 
     # Get email settings
     email_settings = Settings&.email || Hash.new(nil)
@@ -40,14 +44,24 @@ class ReportsController < ApplicationController
       return slim :_alert, locals: { type: :error, msg: email_approvals[:reason] }, layout: nil
     end
 
-    @report = if params[:id]
-                BMS::DB[params[:id]]
-              else
-                BMS::DB[:latest]
-              end
+    # Pull the report. There are 3 scenarios here.
+    # 1. :id is valid timestamp
+    # 2. :id is 'latest' or 'new' (TODO: implement new)
+    # 3. :id is invalid timestamp
+
+    # NTS: This is only a case to add 'new' later.
+    case # rubocop:disable Style/EmptyCaseCondition
+    when (report = Report.find(timestamp: params[:id])&.first)
+      # Scenario #1
+      @report = report.to_h
+    when params[:id] == 'latest'
+      # Scenario #2
+      @report = Report.latest.first.to_h
+    end
 
     unless @report
-      status 401
+      # Scenario #3
+      status 404
       return slim :_alert, locals: { type: :error, msg: 'Email failed. Invalid report id.' }, layout: nil
     end
 
@@ -95,9 +109,10 @@ class ReportsController < ApplicationController
   get %r{/([1-9][0-9]*|latest)} do
     timestamp = params['captures'].first
     # TODO: Validate input
-    if (@report = BMS::DB.result(timestamp))
+    timestamp = Report.latest.first.timestamp if timestamp == 'latest'
+    if (@report = Report.find(timestamp: timestamp).first.to_h)
       @header = 'BMS Health Report'
-      @caption = display_time(@report.timestamp)
+      @caption = display_time(@report[:timestamp])
       slim :tabbed_report
     else
       slim 'p No result found.'
@@ -105,36 +120,10 @@ class ReportsController < ApplicationController
   end
 
   get '/list' do
-    if (@reports = BMS::DB.runs)
+    if (@reports = Report.all)
       slim :reports
     else
       slim 'p No reports in the database.'
     end
-  end
-
-  get '/health' do
-    health = { status: 'green' }
-    # Check worker status
-    if worker_running?
-      health[:worker] = 'running'
-    else
-      health[:status] = 'yellow'
-      health[:worker] = 'stopped'
-    end
-    # Check database status
-    health[:last_refresh] = BMS::DB.result(:latest)[:timestamp]
-    if health[:last_refresh]
-      health[:database] = 'running'
-    else
-      health[:status] = 'red'
-      health[:database] = 'errored'
-    end
-    case health[:status]
-    when 'yellow'
-      status 501
-    when 'red'
-      status 503
-    end
-    JSON.generate(health)
   end
 end

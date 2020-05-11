@@ -1,4 +1,4 @@
-log_level: info
+log_level: debug
 email:
   approved:
     - '^.*@bah\.com$'
@@ -9,11 +9,11 @@ email:
     cc:
       - alexander.loy@va.gov
       - jeffrey.jensen2@va.gov
-keep_results: 20
-kubernetes:
-  url: https://kubernetes.default.svc
-prometheus:
-  url: http://prod8-prometheus-operator-prometheus.monitoring:9090
+  manner: smtp
+  options:
+    address: 'smtp.va.gov'
+    port: 25
+keep_results: 500
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod8-consul.vault:8500/v1/status/leader
@@ -34,5 +34,15 @@ uris:
       473: PERFORMANCE STANDBY
       501: UNINITIALIZED
       503: SEALED
+kubernetes:
+  url: https://kubernetes.default.svc
+nexus:
+  repos:
+    prod: 'https://container-registry.prod8.bip.va.gov/'
+    stage: 'https://container-registry.stage8.bip.va.gov/'
+    dev: 'https://container-registry.dev8.bip.va.gov/'
+prometheus:
+  url: http://prod8-prometheus-operator-prometheus.monitoring:9090
+redis: "redis://:tzJryM3zh2AUN3zW@localhost:6379"
 worker:
   sleep: 900

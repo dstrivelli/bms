@@ -1,9 +1,16 @@
-Dockerfile
-README.md
-telepresence.log
-todo.yaml
+# Directories
 .git
-.gitignore
-spec
-tags
 charts
+local
+spec
+stunnel
+
+# Files
+.gitignore
+Dockerfile
+Rakefile
+README.md
+tags
+telepresence.log
+telepresence.sh
+todo.yaml

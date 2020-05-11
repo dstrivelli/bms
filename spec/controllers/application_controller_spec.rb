@@ -7,8 +7,6 @@ require 'application_controller'
 describe ApplicationController do
   let(:app) { ApplicationController.new }
 
-  before { load_db }
-
   context 'GET /' do
     let(:response) { get '/' }
 

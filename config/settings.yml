@@ -1,4 +1,6 @@
 log_level: info
-keep_results: 5
+keep_results: 100
+redis: redis://localhost:6379
 uris: {}
-db: '/tmp/bms.db'
+worker:
+  pid_file: <%= File.expand_path('run/worker.pid', __dir__) %>

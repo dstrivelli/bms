@@ -49,27 +49,11 @@ module DisplayHelpers
     request.path_info == path ? 'current' : nil
   end
 
-  def worker_pid
-    # Validate pid file exists
-    pid = File.read('/tmp/bms_worker.pid').to_i
-    return nil if pid.zero?
-
-    # Validate process is still running
-    Process.getpgid(pid)
-    pid
-  rescue Errno::ENOENT, Errno::ESRCH
-    nil
-  end
-
-  def worker_running?
-    worker_pid ? true : false
-  end
-
-  def parse_percentage(percentage, percision: 0)
-    percentage = percentage.round(percision)
-    payload = { value: percentage }
-    payload[:text] = "#{percentage}%"
-    payload[:bg] = case percentage
+  def parse_percentage(value, precision: 0)
+    value = value.to_f.round(precision)
+    payload = { value: value }
+    payload[:text] = "#{value}%"
+    payload[:bg] = case value
                    when 90..100
                      'bg-danger'
                    when 75..89
