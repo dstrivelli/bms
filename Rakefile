@@ -28,26 +28,28 @@ rescue LoadError
 end
 
 desc 'Load authentication tokens for testing'
-task :setup, [:username, :password] do |t, args|
+task :setup, [:username, :password] do |_, args|
   require 'faraday'
   require 'yaml'
   config = YAML.safe_load(File.read(File.expand_path('~/.kube/config')))
   token = config['users'].first['user']['auth-provider']['config']['id-token']
   File.open('local/k8_token', 'w') { |file| file.puts token }
+
   oauth_url = URI('https://oauth.prod8.bip.va.gov/')
   response = Faraday.get oauth_url.merge('/oauth2/start?rd=https://kibana.prod8.bip.va.gov/')
-  csrf_cookie = response.headers['set-cookie'].split(';', 2).first
+  csrf_cookie = response.headers['set-cookie'].split(';', 2).first + ';'
   dex_url = URI(response.headers['location'])
   response = Faraday.get(dex_url)
   auth = { 'login' => args.username, 'password' => args.password }
   response = Faraday.post(dex_url.merge(response.headers['location']), auth)
   raise 'Oauth2 Login Failed.' unless response.status == 303
+
   response = Faraday.get(dex_url.merge(response.headers['location']))
   response = Faraday.get(response.headers['location']) do |req|
     req.headers['cookie'] = csrf_cookie
   end
-  oauth_cookie = /(_oauth2_proxy=[^;]*);/.match(response.headers['set-cookie'])[1]
-  File.open('local/_oauth2_proxy', 'w') { |f| f.puts "#{oauth_cookie};" }
+  oauth_cookie = /(_oauth2_proxy=[^;]*;)/.match(response.headers['set-cookie'])[1]
+  File.open('local/_oauth2_proxy', 'w') { |f| f.puts oauth_cookie }
 end
 
 desc 'Build docker image'
@@ -120,5 +122,8 @@ end
 desc 'Flush Redis database'
 task :flush do
   require 'ohm'
+  require 'config'
+  redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
+  Ohm.redis = Relic.new(redis_host)
   puts Ohm.flush
 end

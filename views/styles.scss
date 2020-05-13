@@ -67,6 +67,26 @@ body {
   }
 }
 
+.dot {
+  height: 20px;
+  width: 20px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.green {
+  background-color: #bbb;
+}
+
+.yellow {
+  background-color: #ff0;
+}
+
+.red {
+  background-color: #f00;
+}
+
 #footer {
   margin: 20px 0;
 }

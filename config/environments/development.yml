@@ -29,7 +29,7 @@ uris:
   idm: https://idm.prod.bip.va.gov/ipa/ui/
   kibana: https://kibana.prod8.bip.va.gov/status
   vault:
-    uri: https://vault.prod8.bip.va.gov/v1/sys/health?standbyok
+    uri: 'https://vault.prod8.bip.va.gov/v1/sys/health?standbyok'
     type: response_code
     response_codes:
       429: STANDBY
@@ -40,6 +40,5 @@ uris:
 nexus:
   repos:
     prod: 'https://container-registry.prod8.bip.va.gov/'
-    stage: 'https://container-registry.stage8.bip.va.gov/'
 worker:
   sleep: 60

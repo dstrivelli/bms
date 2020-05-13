@@ -26,7 +26,7 @@ uris:
   idm: https://idm.prod.bip.va.gov/ipa/ui/
   kibana: http://prod8-kibana.logging:443/status
   vault:
-    uri: http://prod8-vault.vault:8200/v1/sys/health?standbyok
+    uri: 'http://prod8-vault.vault:8200/v1/sys/health?standbyok'
     type: response_code
     response_codes:
       429: STANDBY
@@ -45,4 +45,4 @@ prometheus:
   url: http://prod8-prometheus-operator-prometheus.monitoring:9090
 redis: "redis://:tzJryM3zh2AUN3zW@localhost:6379"
 worker:
-  sleep: 900
+  sleep: 30
