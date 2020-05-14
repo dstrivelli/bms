@@ -123,10 +123,7 @@ class ReportsController < ApplicationController
   end
 
   get '/list' do
-    if (@reports = Report.all)
-      slim :reports
-    else
-      slim 'p No reports in the database.'
-    end
+    @reports = Report.all
+    slim :reports
   end
 end

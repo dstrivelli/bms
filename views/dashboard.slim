@@ -1,0 +1,34 @@
+div class='container'
+  h2 class='text-center' Kubernetes Nodes
+  div class='row'
+    div class='col'
+      ul class='list-group list-group-horizontal'
+        - @nodes.each do |node|
+          - light, text = light_for_node(node)
+          li class='list-group-item'
+            i> class="fas fa-server fa-lg #{light}-text" data-toggle='tooltip' data-placement='bottom' title="#{display_value('hostname', node.hostname)}"
+  h2 class='text-center' Namespaces
+  div class='row'
+    - @namespaces.each_slice((@namespaces.size / 3.0).ceil).with_index do |slice, idx|
+      div class='col'
+        div id="namespaces_#{idx}" class='accordion md-accordion' role='tablist' aria-multiselectable='true'
+          - slice.each do |namespace|
+            - light, text = light_for_namespace(namespace)
+            div class='card'
+              div id="namespace_#{namespace.id}" class='card-header' role='tab'
+                a data-toggle='collapse' data-target="#collapse_#{namespace.id}" href='#' aria-expanded='false' aria-controls="collapse_#{namespace.id}"
+                  h5  class='mb-0'
+                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill"
+                      = namespace.deployments.size
+                    = display_value('name', namespace.name)
+              div id="collapse_#{namespace.id}" class='collapse' aria-labelledby="namespace_#{namespace.id}" data-parent="#namespaces_#{idx}"
+                ul class='list-group list-group-flush'
+                  - namespace.deployments.each do |deployment|
+                    - light, text = light_for_deployment(deployment)
+                    li class='list-group-item'
+                      div class='media'
+                        img src="img/dot-#{light}-20px.png" class="mr-3"
+                        div class='media-body'
+                          h5 class='mt-0'
+                            = display_value('name', deployment.name)
+                          = display_value('image', deployment.image)

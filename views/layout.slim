@@ -4,17 +4,21 @@ html lang='en'
     title BIP Monitoring System
     meta charset='utf-8'
     meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
+    link rel='apple-touch-icon' size='180x180' href='/apple-touch-icon.png'
+    link rel='icon' size='32x32' href='/favicon-32x32.png'
+    link rel='icon' size='16x16' href='/favicon-16x16.png'
+    link rel='manifest' href='/site.webmanifest'
     link rel='stylesheet' href='/css/font-awesome.all.css'
-    link rel='stylesheet' href='/css/bootstrap.css'
-    link rel='stylesheet' href='/css/mdb.css'
+    link rel='stylesheet' href='/css/bootstrap.min.css'
+    link rel='stylesheet' href='/css/mdb.min.css'
     link rel='stylesheet' href='/css/styles.css'
     - if @stylesheets
       - @stylesheets.each do |stylesheet|
         link rel='stylesheet' href=stylesheet
-    script src='/js/jquery-3.4.1.min.js'
-    script src='/js/popper.js'
-    script src='/js/bootstrap.js'
-    script src='/js/mdb.js'
+    script src='/js/jquery.min.js'
+    script src='/js/popper.min.js'
+    script src='/js/bootstrap.min.js'
+    script src='/js/mdb.min.js'
     script src='/js/bms.js'
     - if @scripts
       - @scripts.each do |js|
