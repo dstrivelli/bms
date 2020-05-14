@@ -14,4 +14,6 @@ div id='emailModal' class='modal fade' tabindex=-1 role='dialog' aria-labelled-b
               Leave blank for default distro
       div class='modal-footer'
         button type='button' class='btn btn-primary' onclick="sendEmail('#{@report.timestamp}');" Send
-button id='email' type='button' class='btn btn-primary' data-toggle='modal' data-target='#emailModal' Email
+div id='email' class='fixed-action-btn' style='bottom: 24px; right: 24px;'
+  a class='btn-floating btn-lg blue' data-toggle='modal' data-target='#emailModal'
+    i class='fas fa-envelope'

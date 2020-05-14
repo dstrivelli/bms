@@ -12,6 +12,7 @@ require 'report'
 # Base class for all Controllers
 class ApplicationController < Sinatra::Base
   set :root, File.expand_path('..', __dir__)
+  enable :logging
   enable :sessions
 
   register Config
@@ -26,7 +27,7 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/' do
-    redirect '/reports/latest'
+    redirect '/dashboard'
   end
 
   get '/css/styles.css' do
@@ -53,5 +54,7 @@ class ApplicationController < Sinatra::Base
     # JSON.generate(health)
   end
 
-  not_found { "I don't know what you want. Go back I guess." }
+  not_found do
+    "I don't know what you want. Go back I guess."
+  end
 end

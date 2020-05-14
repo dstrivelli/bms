@@ -1,11 +1,15 @@
-h2 Kubernetes Nodes
-== slim :_table, locals: { table: @report.nodes }
+div id='nodes_table' class='mw-100'
+  h2 Kubernetes Nodes
+  == slim :_table, locals: { table: @report.nodes }
 hr
-h2 Unhealthy Pods
-== slim :_table, locals: { table: @report.unhealthy_pods }
+div id='pods_table' class='mw-100'
+  h2 Unhealthy Pods
+  == slim :_table, locals: { table: @report.unhealthy_pods }
 hr
-h2 Pod Restarts
-== slim :_table, locals: { table: @report.restarts }
+div id='restarts_table' class='mw-100'
+  h2 Pod Restarts
+  == slim :_table, locals: { table: @report.restarts }
 hr
-h2 URIs
-== slim :_table, locals: { table: @report.health_checks }
+div id='uris_table' class='mw-100'
+  h2 URIs
+  == slim :_table, locals: { table: @report.health_checks }
