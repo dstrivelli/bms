@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'active_support'
-require 'active_support/core_ext/numeric/time'
 require 'ohm'
 require 'ohm/contrib'
 
@@ -10,16 +8,18 @@ require 'ohm/contrib'
 class HealthCheck < Ohm::Model
   include Ohm::Callbacks
 
-  reference :report, :Report
-
   attribute :name
+  unique :name
   attribute :uri
   attribute :result
+  attribute :details
 
-  protected
-
-  def after_save
-    redis.call 'EXPIRE', key, 90.days
+  def to_report_hash
+    {
+      name: name,
+      uri: uri,
+      result: result
+    }
   end
 
   alias save! save

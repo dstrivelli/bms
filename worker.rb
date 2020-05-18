@@ -10,6 +10,8 @@ require 'fileutils'
 require 'logging'
 require 'uri'
 
+require_relative 'version'
+
 # Load all our application requirements
 %w[connectors models].each do |dir|
   # $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
@@ -40,18 +42,18 @@ end
 
 load_settings(env)
 
-pid_file = Settings&.worker&.pid_file || '/tmp/bms_worker.pid'
-if File.exist? pid_file
-  puts 'Only one instance of worker can run at a time.'
-  puts 'If this in error, remove ' + pid_file
-  exit 1
-else
-  File.open(pid_file, 'w') { |f| f.write Process.pid }
-end
-
 # Setup database
 redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
 Ohm.redis = Redic.new(redis_host)
+
+# Flush database if the data in Redis is old
+db_version = Ohm.redis.call('GET', 'version')
+unless db_version == BMS::VERSION
+  print 'Database version mismatch, flushing...'
+  Ohm.redis.call('FLUSHALL')
+  puts 'done.'
+end
+Ohm.redis.call('SET', 'version', BMS::VERSION)
 
 # CONSTANTS
 CPU_ORDERS_OF_MAGNITUDE = {
@@ -65,6 +67,8 @@ RAM_ORDERS_OF_MAGNITUDE = {
 }.freeze
 
 def convert_mcores(mcores, precision: 2)
+  return 0.0 if mcores.nil?
+
   unit = mcores[-1].to_sym
   count = mcores[0..-2].to_f
   result = if CPU_ORDERS_OF_MAGNITUDE[unit]
@@ -92,7 +96,7 @@ def fetch_uri(uri)
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     end
     headers = Settings&.url_options&.headers || nil
-    http.get(uri.path, headers)
+    http.get(uri, headers)
   rescue Net::HTTPRequestTimeOut
     Net::HTTPResponse.new('', 408, 'TIMEDOUT')
   rescue SocketError
@@ -148,6 +152,12 @@ def setup_connections
     auth_options: Settings&.kubernetes&.auth_options&.to_h,
     ssl_options: Settings&.kubernetes&.ssl_options&.to_h
   )
+  extensions = KubeCtl.new(
+    URI.join(Settings&.kubernetes&.url, '/apis/extensions'),
+    'v1beta1',
+    auth_options: Settings&.kubernetes&.auth_options&.to_h,
+    ssl_options: Settings&.kubernetes&.ssl_options&.to_h
+  )
   metrics = KubeCtl.new(
     URI.join(Settings&.kubernetes&.url, '/apis/metrics.k8s.io'),
     'v1beta1',
@@ -155,13 +165,21 @@ def setup_connections
     ssl_options: Settings&.kubernetes&.ssl_options&.to_h
   )
   prom = Prom.new(deep_to_h(Settings&.prometheus))
-  [kubectl, metrics, prom]
+  [kubectl, extensions, metrics, prom]
 end
 
-kubectl, metrics, prom = setup_connections
+kubectl, extensions, metrics, prom = setup_connections
 
 begin
-  report = nil # Define outside loop so we can access in rescue/ensure block
+  pid_file = Settings&.worker&.pid_file || '/tmp/bms_worker.pid'
+  if File.exist? pid_file
+    puts 'Only one instance of worker can run at a time.'
+    puts 'If this in error, remove ' + pid_file
+    exit 1
+  else
+    File.open(pid_file, 'w') { |f| f.write Process.pid }
+  end
+
   # Start loop
   loop do
     # Initialize logging
@@ -169,63 +187,173 @@ begin
     # Example of how to fine tune logging:
     # Logging.logger['Prom'].level = :debug
 
-    @logger.debug 'Starting new refresh.'
-    report = Report.create(timestamp: Time.now.to_i)
+    @logger.info 'Starting new refresh...'
+
+    ### Update Nodes
+
+    nodes = kubectl.get_nodes
+    metrics_hash = metrics.get_nodes.each_with_object({}) { |n, o| o[n.metadata.name] = n.to_hash }
 
     # TODO: Figure out how to run the prom queries in batches instead of each
     # Kubernetes Nodes
-    kubectl.get_nodes.map do |elem|
+    nodes.map do |elem|
       name = elem[:metadata][:name]
-      @logger.debug "Getting info for node: #{name}"
+      elem_metrics = metrics_hash[name]
 
-      node = Node.new(report: report, hostname: name)
+      @logger.debug "Getting info for Node(#{name})"
 
-      # conditions
+      addresses = elem.status.addresses.each_with_object({}) do |a, o|
+        o[a.type.downcase.to_sym] = a.address
+      end
       conditions = elem[:status][:conditions].select { |c| c[:status] == 'True' }
-      node.conditions = conditions.map! { |c| c[:type] }.join(', ')
 
-      # cpu_allocation
-      qry_string = %[sum(kube_pod_container_resource_requests_cpu_cores{node="#{name}"})/sum(kube_node_status_allocatable_cpu_cores{node="#{name}"})]
-      node.cpu_allocation_percent = to_percentage(prom.single_value(qry_string))
+      attrs = {
+        name: name,
+        hostname: addresses[:hostname],
+        ip: addresses[:internalip],
+        annotations: elem.metadata.annotations.to_h.stringify_keys,
+        labels: elem.metadata.labels.to_h.stringify_keys,
+        kernel_version: elem.status.nodeInfo.kernelVersion,
+        kubelet_version: elem.status.nodeInfo.kubeletVersion,
+        conditions: conditions.map! { |c| c[:type] },
+        cpu_allocatable: convert_mcores(elem.status.allocatable.cpu),
+        ram_allocatable: convert_ram(elem.status.allocatable.memory),
+        cpu_utilized: convert_mcores(elem_metrics[:usage][:cpu]),
+        ram_utilized: convert_ram(elem_metrics[:usage][:memory])
+      }
 
-      # ram_allocation
-      qry_string = %[sum(kube_pod_container_resource_requests_memory_bytes{node="#{name}"}) / sum(kube_node_status_allocatable_memory_bytes{node="#{name}"})]
-      node.ram_allocation_percent = to_percentage(prom.single_value(qry_string))
-
-      # cpu_utilization
-      cpu_alloc = kubectl.get_node(name)[:status][:allocatable][:cpu]
-      cpu_used  = metrics.get_entity('nodes', name)[:usage][:cpu]
-      node.cpu_utilization_percent = to_percentage(convert_mcores(cpu_used) / convert_mcores(cpu_alloc))
-
-      # ram_utilization
-      ram_alloc = kubectl.get_node(name)[:status][:allocatable][:memory]
-      ram_used = metrics.get_entity('nodes', name)[:usage][:memory]
-      node.ram_utilization_percent = to_percentage(convert_ram(ram_used) / convert_ram(ram_alloc))
-
-      node.save
+      if (cached = Node.with(:name, name))
+        cached.update(attrs)
+      else
+        Node.create(attrs)
+      end
     end
 
-    # Pods in an "unhealthy" state
-    kubectl.get_pods(
-      field_selector: 'status.phase!=Running,status.phase!=Succeeded'
-    ).map do |pod|
-      UnhealthyPod.create(
-        report: report,
-        pod: pod[:metadata][:name],
-        namespace: pod[:metadata][:namespace],
-        state: pod[:status][:phase]
-      )
+    @logger.debug 'Cleaning up any extra Nodes in cache that no longer exist.'
+    nodes_array = nodes.map { |elem| elem.metadata.name }
+    Node.all.each do |elem|
+      unless nodes_array.include? elem.name
+        @logger.debug "Deleting Node(#{elem.name}) from cache"
+        elem.delete
+      end
     end
 
-    # Pods that have restarted in the past 24h
-    qry = 'floor(delta(kube_pod_container_status_restarts_total[24h])) > 0'
-    prom.multi_value(qry, %i[namespace pod]).each do |pod|
-      Restart.create(
-        report: report,
-        namespace: pod[:namespace],
-        pod: pod[:pod],
-        count: pod[:value]
-      )
+    ### Namespaces
+
+    namespaces = kubectl.get_namespaces
+
+    namespaces.each do |elem|
+      @logger.debug "Getting info for Namespace(#{elem.metadata.name})"
+
+      attrs = {
+        name: elem.metadata.name,
+        annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
+        labels: elem.metadata&.labels&.to_h&.stringify_keys
+      }
+
+      if (cached = Namespace.with(:name, attrs[:name]))
+        cached.update(attrs)
+      else
+        Namespace.create(attrs)
+      end
+    end
+
+    @logger.debug 'Cleaning up any extra Namespaces in cache that no longer exist.'
+    namespaces_array = namespaces.map { |elem| elem.metadata.name }
+    Namespace.all.each do |elem|
+      unless namespaces_array.include? elem.name
+        @logger.debug "Deleting Namespace(#{elem.name}) from cache"
+        elem.delete
+      end
+    end
+
+    ### Pods
+
+    pods = kubectl.get_pods
+
+    pods.each do |elem|
+      @logger.debug "Getting info for pod: #{elem.metadata.namespace}/#{elem.metadata.name}"
+
+      attrs = {
+        uid: elem.metadata.uid,
+        name: elem.metadata.name,
+        namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
+        node_id: Node.with(:name, elem.spec.nodeName).id,
+        annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
+        labels: elem.metadata&.labels&.to_h&.stringify_keys,
+        state: elem.status.phase
+      }
+
+      if (pod = Pod.with(:uid, attrs[:uid]))
+        pod.update(attrs)
+      else
+        pod = Pod.create(attrs)
+      end
+
+      current_containers = pod.containers
+
+      # enumerate containers
+      elem.spec.containers.each do |container|
+        attrs = {
+          pod_id: pod.id,
+          name: container.name,
+          image: container.image,
+          liveness_probe: container&.livenessProbe&.to_h&.deep_stringify_keys,
+          readiness_probe: container&.readinessProbe&.to_h&.deep_stringify_keys,
+          cpu_requests: convert_mcores(container&.resources&.requests&.cpu),
+          ram_requests: convert_mcores(container&.resources&.requests&.memory),
+          cpu_limits: convert_mcores(container&.resources&.limits&.cpu),
+          ram_limits: convert_mcores(container&.resources&.limits&.memory)
+        }
+
+        result = current_containers.find(name: attrs[:name])
+        if result.size.positive?
+          result.first.update(attrs)
+        else
+          Container.create(attrs)
+        end
+      end
+    end
+
+    # Cleanup any pods in cache that do not exist anymore
+    pods_array = pods.map { |elem| elem.metadata.uid }
+    Pod.all.each do |elem|
+      elem.delete unless pods_array.include? elem.uid
+    end
+
+    ## Deployments
+
+    deployments = extensions.get_deployments
+
+    deployments.each do |elem|
+      @logger.debug "Getting info for Deployment(#{elem.metadata.name})"
+
+      attrs = {
+        namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
+        name: elem.metadata.name,
+        annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
+        labels: elem.metadata&.labels&.to_h&.stringify_keys,
+        replicas: elem.status.replicas,
+        ready_replicas: elem.status.readyReplicas,
+        images: []
+      }
+
+      elem.spec.template.spec.containers.each { |c| attrs[:images] << c.image }
+
+      if (cached = Deployment.with(:name, attrs[:name]))
+        cached.update(attrs)
+      else
+        Deployment.create(attrs)
+      end
+    end
+
+    @logger.debug 'Cleaning up any extra Deployments in cache that no longer exist.'
+    deployments_array = deployments.map { |elem| elem.metadata.name }
+    Deployment.all.each do |elem|
+      unless deployments_array.include? elem.name
+        @logger.debug "Deleting Deployment(#{elem.name}) from cache"
+        elem.delete
+      end
     end
 
     # Health Checks
@@ -245,39 +373,74 @@ begin
       @logger.debug "Fetching #{values[:uri]}..."
       resp = fetch_uri values[:uri]
       @logger.debug "Response code: #{resp.code} #{resp.message}"
-      result = case values.fetch(:type, :response_code).to_sym
-               when :json
-                 json = JSON.parse(resp.body)
-                 {
-                   name: name.to_s,
-                   uri: values[:uri],
-                   result: json[values[:value]]
-                 }
-               when :response_code
-                 msg = values[:response_codes][resp.code.to_s.to_sym] || resp.message
-                 {
-                   name: name.to_s,
-                   uri: values[:uri],
-                   result: "#{resp.code} #{msg}"
-                 }
-               else
-                 {
-                   name: name.to_s,
-                   uri: values[:uri],
-                   result: 'ERROR: Invalid result_type.'
-                 }
-               end
-      HealthCheck.create({ report: report }.merge(result))
+      attrs = case values.fetch(:type, :response_code).to_sym
+              when :json
+                json = JSON.parse(resp.body)
+                {
+                  name: name.to_s,
+                  uri: values[:uri],
+                  result: json[values[:value]]
+                }
+              when :response_code
+                msg = values[:response_codes][resp.code.to_s.to_sym] || resp.message
+                {
+                  name: name.to_s,
+                  uri: values[:uri],
+                  result: "#{resp.code} #{msg}"
+                }
+              else
+                {
+                  name: name.to_s,
+                  uri: values[:uri],
+                  result: 'ERROR: Invalid result_type.'
+                }
+              end
+      attrs[:details] = resp.body
+      if (cached = HealthCheck.with(:name, attrs[:name]))
+        cached.update(attrs)
+      else
+        HealthCheck.create(attrs)
+      end
     end
 
-    report.update(complete: true)
-    report = nil # Unset finalized report so ensure block doesn't delete
+    @logger.debug 'Cleaning up any extra HealthChecks in cache that no longer exist.'
+    healthchecks_array = Settings.uris.keys.map(&:to_s)
+    HealthCheck.all.each do |elem|
+      unless healthchecks_array.include? elem.name
+        @logger.debug "Deleting HealthCheck(#{elem.name}) from cache"
+        elem.delete
+      end
+    end
+
+    # Generate report
+    last_report_ran = Report.latest.first&.timestamp || 0
+    if (Time.now.to_i - last_report_ran) > (Settings&.reports&.every || 0)
+      @logger.debug 'Generating report.'
+      Report.create(
+        {
+          timestamp: Time.now.to_i,
+          nodes: Node.all.to_a.map(&:to_report_hash),
+          restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
+          unhealthy_pods: Pod.find(healthy: false).to_a.map(&:attributes),
+          health_checks: HealthCheck.all.to_a.map(&:to_report_hash)
+        }
+      )
+    end
+
+    # Purge older reports
+    @logger.debug 'Purging old reports...'
+    old_reports = Ohm.redis.call('ZREVRANGEBYSCORE', 'Report:latest', Time.now.to_i - Settings.reports.purge_older_than, 0)
+    old_reports.each do |id|
+      report = Report[id]
+      @logger.debug "Deleting report with timestamp #{report.strftime}."
+      report.delete
+    end
 
     # Update docker labels
-    Settings&.nexus&.repos&.keys&.each { |repo| refresh_labels(repo) }
+    # Settings&.nexus&.repos&.keys&.each { |repo| refresh_labels(repo) }
 
     sleep_for = Settings&.worker&.sleep || 300
-    @logger.debug "Sleeping for #{sleep_for} seconds..."
+    @logger.info "Sleeping for #{sleep_for} seconds..."
     sleep(sleep_for.to_i)
   end # loop
 rescue Interrupt
@@ -291,6 +454,5 @@ rescue SignalException => e
   end
   raise
 ensure
-  report.delete if defined?(report) && report # Delete incomplete report
   FileUtils.rm(pid_file, force: true) # Clean up pid file
 end

@@ -10,8 +10,8 @@ describe ApplicationController do
   context 'GET /' do
     let(:response) { get '/' }
 
-    it 'redirects to /reports/latest' do
-      expect(response).to redirect_to 'http://example.org/reports/latest'
+    it 'redirects to /dashboard' do
+      expect(response).to redirect_to 'http://example.org/dashboard'
     end
   end
 

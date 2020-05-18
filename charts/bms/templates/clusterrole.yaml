@@ -6,8 +6,10 @@ metadata:
 rules:
   - apiGroups:
     - ""
+    - extensions
     - metrics.k8s.io
     resources:
+      - deployments
       - events
       - ingress
       - jobs

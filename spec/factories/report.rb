@@ -9,17 +9,58 @@ require 'health_check'
 
 FactoryBot.define do
   factory :report do
-    timestamp { Time.now.to_i }
-    complete { true }
-
     transient do
       nodes_count { 5 }
       health_checks_count { 5 }
     end
 
-    after(:create) do |report, evaluator|
-      create_list(:health_check, evaluator.health_checks_count, report: report)
+    timestamp { Time.now.to_i }
+    # TODO: Move this to it's own factory
+    nodes do
+      node_list = []
+      nodes_count.times do
+        node_list << {
+          hostname: FFaker::InternetSE.domain_word,
+          kernel_version: '3.10.0-1127.el7.x86_64',
+          kubelet_version: 'v1.12.7',
+          conditions: ['Ready'],
+          cpu_allocation_percent: rand(100),
+          ram_allocation_percent: rand(100),
+          cpu_utilization_percent: rand(100),
+          ram_utilization_percent: rand(100)
+        }
+      end
+      node_list
     end
+    restarts do
+      [
+        {
+          namespace: 'namespace1',
+          name: 'pod1',
+          value: 1
+        }, {
+          namespace: 'namespace2',
+          name: 'pod2',
+          value: 2
+        }
+      ]
+    end
+    unhealthy_pods { [] }
+    # TODO: Move this to it's own factory
+    health_checks do
+      [
+        {
+          name: FFaker::InternetSE.slug,
+          uri: FFaker::InternetSE.uri('https'),
+          result: '200 OK',
+          details: FFaker::HipsterIpsum.paragraph
+        }
+      ]
+    end
+
+    # after(:create) do |report, evaluator|
+    #   create_list(:health_check, evaluator.health_checks_count)
+    # end
   end
 
   factory :health_check, class: 'HealthCheck' do

@@ -5,6 +5,7 @@ require 'display_helpers'
 require 'sassc'
 require 'sinatra/base'
 require 'sinatra/flash'
+require 'sinatra/respond_with'
 require 'sinatra/validation'
 
 require 'report'
@@ -12,10 +13,12 @@ require 'report'
 # Base class for all Controllers
 class ApplicationController < Sinatra::Base
   set :root, File.expand_path('..', __dir__)
+  enable :logging
   enable :sessions
 
   register Config
   register Sinatra::Flash
+  register Sinatra::RespondWith
   register Sinatra::Validation
 
   helpers DisplayHelpers
@@ -23,10 +26,17 @@ class ApplicationController < Sinatra::Base
   before '/*' do
     @latest_reports = Report.latest_timestamps
     @active_app = self.class.name.chomp('Controller').downcase
+
+    # To have the ability to change response type with an extension
+    # eg: http://example.org/record.json => Accept: application/json
+    if request.url.match(/\.json$/)
+      request.accept.unshift('application/json')
+      request.path_info.gsub!(/\.json$/, '')
+    end
   end
 
   get '/' do
-    redirect '/reports/latest'
+    redirect '/dashboard'
   end
 
   get '/css/styles.css' do
@@ -53,5 +63,7 @@ class ApplicationController < Sinatra::Base
     # JSON.generate(health)
   end
 
-  not_found { "I don't know what you want. Go back I guess." }
+  not_found do
+    "I don't know what you want. Go back I guess."
+  end
 end

@@ -2,9 +2,6 @@
 
 require 'ohm'
 
-# For old format # TODO: Remove this eventually
-$LOAD_PATH << File.expand_path('lib', __dir__)
-
 %w[connectors models helpers controllers].each do |dir|
   $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
   Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }

@@ -53,10 +53,10 @@ class ReportsController < ApplicationController
     case # rubocop:disable Style/EmptyCaseCondition
     when (report = Report.find(timestamp: params[:id])&.first)
       # Scenario #1
-      @report = report.to_h
+      @report = report
     when params[:id] == 'latest'
       # Scenario #2
-      @report = Report.latest.first.to_h
+      @report = Report.latest.first
     end
 
     unless @report
@@ -65,7 +65,7 @@ class ReportsController < ApplicationController
       return slim :_alert, locals: { type: :error, msg: 'Email failed. Invalid report id.' }, layout: nil
     end
 
-    subject = "[BMS] Snapshot Report - #{display_time(@report[:timestamp])}"
+    subject = "[BMS] Snapshot Report - #{display_time(@report.timestamp)}"
 
     # Process html body
     html = Roadie::Document.new(slim(:report, layout: :layout_email))
@@ -109,10 +109,13 @@ class ReportsController < ApplicationController
   get %r{/([1-9][0-9]*|latest)} do
     timestamp = params['captures'].first
     # TODO: Validate input
-    timestamp = Report.latest.first.timestamp if timestamp == 'latest'
-    if (@report = Report.find(timestamp: timestamp).first.to_h)
+    latest = Report.latest.first
+    return slim 'p There are 0 reports found in the database.' if latest.nil?
+
+    timestamp = latest.timestamp if timestamp == 'latest'
+    if (@report = Report.find(timestamp: timestamp).first)
       @header = 'BMS Health Report'
-      @caption = display_time(@report[:timestamp])
+      @caption = display_time(@report.timestamp)
       slim :tabbed_report
     else
       slim 'p No result found.'
@@ -120,10 +123,7 @@ class ReportsController < ApplicationController
   end
 
   get '/list' do
-    if (@reports = Report.all)
-      slim :reports
-    else
-      slim 'p No reports in the database.'
-    end
+    @reports = Report.all
+    slim :reports
   end
 end

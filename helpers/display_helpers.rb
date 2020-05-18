@@ -45,6 +45,20 @@ module DisplayHelpers
     end
   end
 
+  def bootstrap_color_for(value)
+    value = value.to_sym
+    case value
+    when :green, :success
+      'success'
+    when :alert, :warning, :yellow
+      'warning'
+    when :danger, :error, :red
+      'danger'
+    else
+      value.to_s
+    end
+  end
+
   def current?(path = '/')
     request.path_info == path ? 'current' : nil
   end
@@ -64,14 +78,73 @@ module DisplayHelpers
     payload
   end
 
+  def light_for_node(node)
+    light = :green
+    text = []
+    # Check status
+    unless node.conditions.include? 'Ready'
+      text << 'Node is not ready.'
+      light = :red
+    end
+    %w[OutOfDisk MemoryPressure DiskPressure PIDPressure].each do |condition|
+      if node.conditions.include? condition
+        text << "Node is suffering #{condition}."
+        light = :yellow unless light == :red
+      end
+    end
+    # Check Utilization
+
+    %w[cpu ram].each do |resource|
+      if node.attributes["#{resource}_utilization_percent".to_sym].to_i > 95
+        text << "Node has high #{resource.upcase} utilization."
+        light = :yellow unless light == :red
+      end
+    end
+    [light, text]
+  end
+
+  def light_for_namespace(namespace)
+    light = :green
+    text = []
+    namespace.deployments.each do |deployment|
+      deploy_light, deploy_text = light_for_deployment(deployment)
+      case deploy_light
+      when :yellow
+        light = :yellow unless light == :red
+        text += deploy_text.map { |elem| "#{deployment.name}: #{elem}" }
+      when :red
+        light = :red
+        text += deploy_text.map { |elem| "#{deployment.name}: #{elem}" }
+        break
+      end
+    end
+    [light, text]
+  end
+
+  def light_for_deployment(deployment)
+    light = :green
+    text = []
+    # Check readiness probe
+    # Check replicas
+    if deployment.replicas != deployment.ready_replicas
+      light = :yellow unless light == :red
+      text << 'Desired replicas does not match ready replicas.'
+      if deployment.ready_replicas.zero?
+        light = :red
+        text << 'The ready replicas is zero.'
+      end
+    end
+    [light, text]
+  end
+
   def display_time(timestamp)
     Time.at(timestamp).strftime('%B %e, %Y %l:%M%P')
   end
 
   def display_heading(name)
-    name = name.to_s
-    name.slice!(/_percent$/)
-    name.titleize
+    heading = name.dup.to_s
+    heading.slice!(/_percent$/)
+    heading.titleize
   end
 
   def display_value(name, value)
@@ -89,6 +162,8 @@ module DisplayHelpers
   end
 
   def display_string(_name, value)
+    # Filter IP addresses because the VA thinks they
+    # are a matter of a matter of national security.
     value.to_s.gsub(/ip-[0-9]{1,3}-[0-9]{1,3}/, 'ip-x-x')
   end
 

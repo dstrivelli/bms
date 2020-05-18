@@ -4,4 +4,4 @@
   ul
     - @reports.each do |result|
       li
-        a.timestamp time=result href="#{result}" = Time.at(result).strftime('%B %e, %Y %l:%M%P')
+        a.timestamp time=result.timestamp href="#{result.timestamp}" = Time.at(result.timestamp).strftime('%B %e, %Y %l:%M%P')

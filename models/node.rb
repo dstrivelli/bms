@@ -8,46 +8,60 @@ require 'ohm/contrib'
 ##
 # Model to describe Kubernetes nodes
 class Node < Ohm::Model
-  include Ohm::Callbacks
   include Ohm::DataTypes
 
-  #reference :report, :Report
-
   attribute :name
+  unique :name
   attribute :hostname
-  attribute :internal_ip
+  attribute :ip
   attribute :annotations, Type::Hash
   attribute :labels, Type::Hash
   attribute :kernel_version
   attribute :kubelet_version
   attribute :conditions, Type::Array
-  attribute :cpu_allocation_percent, Type::Float
-  attribute :ram_allocation_percent, Type::Float
-  attribute :cpu_utilization_percent, Type::Float
-  attribute :ram_utilization_percent, Type::Float
+  attribute :cpu_allocatable, Type::Float
+  attribute :ram_allocatable, Type::Float
+  attribute :cpu_utilized, Type::Float
+  attribute :ram_utilized, Type::Float
 
-  # collection :pods, :Pod
+  collection :pods, :Pod
 
-  def update(values)
-    begin
-      name = values.metadata.name
-      hostname = scan('Hostname', 'address', values.status.addresses)
-      binding.pry
-    rescue
-      nil
+  # rubocop:disable Security/Eval
+  %w[cpu ram].each do |resource|
+    %w[requests limits].each do |stat|
+      define_method "#{resource}_#{stat}" do
+        total = 0.0
+        pods.each do |pod|
+          total += eval("pod.#{resource}_#{stat}", binding, __FILE__, __LINE__)
+        end
+        total
+      end
     end
   end
 
-  def scan(type, field, array)
-    array.each do |elem|
-      return elem[field] if elem['type'] == type
+  %w[cpu ram].each do |resource|
+    define_method "#{resource}_utilization_percent" do
+      eval("(#{resource}_utilized / #{resource}_allocatable * 100).round(2)", binding, __FILE__, __LINE__)
     end
   end
+  # rubocop:enable Security/Eval
 
-  protected
+  def cpu_allocation_percent
+    (cpu_requests / cpu_allocatable * 100).round(2)
+  end
 
-  def after_save
-    redis.call('EXPIRE', key, 90.days)
+  def ram_allocation_percent
+    (ram_requests / ram_allocatable * 100).round(2)
+  end
+
+  def to_report_hash
+    fields = %w[hostname kernel_version kubelet_version conditions cpu_allocation_percent ram_allocation_percent cpu_utilization_percent ram_utilization_percent]
+    h = {}
+    # Enumerate attributes
+    fields.each do |k|
+      h[k.to_sym] = eval("self.#{k}", binding, __FILE__, __LINE__) # rubocop:disable Security/Eval
+    end
+    h # Return dat hash!
   end
 
   alias save! save
