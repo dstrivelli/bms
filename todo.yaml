@@ -1,6 +1,3 @@
 tasks:
   - write up schema for dry-validation of settings.yml
-  - format report in tabs using bootstrap css
-  - add tooling for pulling docker labels from nexus
   - add tooling for post scanning tests
-  - write logic to prune the database
