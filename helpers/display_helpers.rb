@@ -107,12 +107,14 @@ module DisplayHelpers
     light = :green
     text = []
     namespace.deployments.each do |deployment|
-      deploy_light, = light_for_deployment(deployment)
+      deploy_light, deploy_text = light_for_deployment(deployment)
       case deploy_light
       when :yellow
-        light = :yellow
+        light = :yellow unless light == :red
+        text += deploy_text.map { |elem| "#{deployment.name}: #{elem}" }
       when :red
         light = :red
+        text += deploy_text.map { |elem| "#{deployment.name}: #{elem}" }
         break
       end
     end

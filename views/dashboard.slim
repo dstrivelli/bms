@@ -18,16 +18,17 @@ div class='container'
               div id="namespace_#{namespace.id}" class='card-header' role='tab'
                 a data-toggle='collapse' data-target="#collapse_#{namespace.id}" href='#' aria-expanded='false' aria-controls="collapse_#{namespace.id}"
                   h5  class='mb-0'
-                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill"
+                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
                       = namespace.deployments.size
                     = display_value('name', namespace.name)
               div id="collapse_#{namespace.id}" class='collapse' aria-labelledby="namespace_#{namespace.id}" data-parent="#namespaces_#{idx}"
                 ul class='list-group list-group-flush'
                   - namespace.deployments.each do |deployment|
-                    - light, text = light_for_deployment(deployment)
+                    - dlight, dtext = light_for_deployment(deployment)
                     li class='list-group-item'
                       div class='media'
-                        img src="img/dot-#{light}-20px.png" class="mr-3"
+                        /img src="img/dot-#{dlight}-20px.png" class="mr-3"
+                        i> class="fas fa-circle #{dlight}-text mr-3" title=dtext.join("\n")
                         div class='media-body'
                           h5 class='mt-0'
                             = display_value('name', deployment.name)

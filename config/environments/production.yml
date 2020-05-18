@@ -1,4 +1,4 @@
-log_level: debug
+log_level: info
 email:
   approved:
     - '^.*@bah\.com$'
@@ -13,7 +13,6 @@ email:
   options:
     address: 'smtp.va.gov'
     port: 25
-keep_results: 500
 uris:
   api_server: https://api.prod8.bip.va.gov/healthz
   consul: http://prod8-consul.vault:8500/v1/status/leader

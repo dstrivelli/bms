@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'config'
 require 'English'
 require 'fileutils'
 require 'rake'
@@ -11,6 +12,12 @@ LOCAL_YAML    = 'config/environments/production.yml'
 HELM_YAML     = 'charts/bms/config/production.yml'
 HELM          = 'helm3'
 REMOTE_DOCKER = 'container-registry.prod8.bip.va.gov'
+
+# Load BMS Settings
+env = ENV.fetch('APP_ENV', 'development')
+Config.load_and_set_settings(
+  Config.setting_files(File.join(__dir__, 'config'), env)
+)
 
 # Setup some embedded tasks
 begin
@@ -122,8 +129,7 @@ end
 desc 'Flush Redis database'
 task :flush do
   require 'ohm'
-  require 'config'
   redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
-  Ohm.redis = Relic.new(redis_host)
+  Ohm.redis = Redic.new(redis_host)
   puts Ohm.flush
 end

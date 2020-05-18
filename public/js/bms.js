@@ -5,6 +5,8 @@ function sendEmail(id) {
     data['to'] = to;
   }
 
+  hideAndClearEmailModal();
+
   $.ajax({
     type: 'POST',
     dataType: 'html',
@@ -24,14 +26,12 @@ function hideAndClearEmailModal() {
 function processEmailSuccess(data) {
   console.log('executing processEmailsuccess');
   console.log(data);
-  hideAndClearEmailModal();
   document.getElementById('flashes').innerHTML = data;
 }
 
 function processEmailError(xhr, status, error) {
   console.log('executing processEmailError');
   console.log(xhr);
-  hideAndClearEmailModal();
   document.getElementById('flashes').innerHTML = xhr.responseText;
 }
 

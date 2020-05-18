@@ -19,13 +19,16 @@
             - colour = ''
             - if col.to_s.end_with? '_percent'
               - v = parse_percentage(v)
-              td
-                div class='container'
-                  div class='row'
-                    div class='text-center w-100' = v[:text]
-                  div class='row'
-                    div class='progress md-progress w-100'
-                      div class="progress-bar progress-bar-striped #{v[:bg]}" role='progressbar' style="width: #{v[:text]}" aria-valuenow=v[:value] aria-valuemin='0' aria-valuemax='100'
+              - unless defined?(no_progress_bars)
+                td
+                  div class='container'
+                    div class='row'
+                      div class='text-center w-100' = v[:text]
+                    div class='row'
+                      div class='progress md-progress w-100'
+                        div class="progress-bar progress-bar-striped #{v[:bg]}" role='progressbar' style="width: #{v[:text]}" aria-valuenow=v[:value] aria-valuemin='0' aria-valuemax='100'
+              - else
+                td class='text-center' = v[:text]
             - else
               td = display_value(col, v)
 - else

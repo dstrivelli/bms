@@ -1,11 +1,11 @@
 doctype html
-html
+html lang='en'
   head
     title @subject
     meta charset="utf-8"
     link rel='stylesheet' href='/css/font-awesome.all.css'
     link rel='stylesheet' href='/css/bootstrap.min.css'
     link rel='stylesheet' href='/css/mdb.min.css'
-  body style='max-width: 800px;'
+  body
     h1 = "BMS Health Report for #{display_time(@report.timestamp)}"
     == yield

@@ -1,5 +1,7 @@
-log_level: info
-keep_results: 100
+log_level: warn
+reports:
+  every: 1800
+  purge_older_than: 86400
 redis: redis://localhost:6379
 uris: {}
 worker:

@@ -20,8 +20,9 @@ gem 'prometheus-api-client' # Gather information from Prometheus
 gem 'roadie'                # In-line CSS for emails
 gem 'sassc'                 # SASS Compiler
 gem 'sinatra'
-gem 'sinatra-flash'         # Nice alert notifications in pages
-gem 'sinatra-validation'    # Validate params in Sinatra
+gem 'sinatra-contrib'
+gem 'sinatra-flash'         # Allows flash notifications
+gem 'sinatra-validation'    # Allows validation of params
 gem 'slim'                  # Templating
 gem 'thin'                  # Use Thin for web handler
 
@@ -31,7 +32,6 @@ group :development do
   gem 'pry-byebug'
   gem 'pry-remote'
   gem 'pry-rescue'
-  gem 'sinatra-contrib'     # Gives us access to sinatra/reloader
 end
 
 group :test do

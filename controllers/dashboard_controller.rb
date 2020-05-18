@@ -4,8 +4,6 @@ require 'json'
 require 'mail'
 
 require 'application_controller'
-require 'display_helpers'
-require 'email_helpers'
 
 # Controller to handle health reports
 class DashboardController < ApplicationController
@@ -14,6 +12,13 @@ class DashboardController < ApplicationController
     @nodes = Node.all
     @namespaces = Namespace.all
     @deployments = Deployment.all
-    slim :dashboard
+    @payload = {
+      'nodes' => @nodes.map(&:attributes),
+      'namespaces' => @namespaces.map(&:to_report_hash)
+    }
+    respond_to do |format|
+      format.html { slim :dashboard }
+      format.json { @payload.to_json }
+    end
   end
 end

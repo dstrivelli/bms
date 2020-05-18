@@ -26,8 +26,12 @@ class Report < Ohm::Model
     latest(count).each_with_object([]) { |node, arr| arr << node.timestamp }
   end
 
+  def strftime(str = '%B %e, %Y %l:%M:%P')
+    Time.at(timestamp).strftime(str)
+  end
+
   def to_s
-    "BMS Health Report - #{Time.at(timestamp).strftime('%B %e, %Y %l:%M:%P')}"
+    "BMS Health Report - #{strftime}"
   end
 
   protected

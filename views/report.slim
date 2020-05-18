@@ -1,6 +1,6 @@
 div id='nodes_table' class='mw-100'
   h2 Kubernetes Nodes
-  == slim :_table, locals: { table: @report.nodes }
+  == slim :_table, locals: { table: @report.nodes, no_progress_bars: true }
 hr
 div id='pods_table' class='mw-100'
   h2 Unhealthy Pods

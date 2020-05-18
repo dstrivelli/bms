@@ -15,6 +15,15 @@ class Namespace < Ohm::Model
   collection :deployments, :Deployment
   collection :pods, :Pod
 
+  def to_report_hash
+    {
+      name: name,
+      annotations: annotations,
+      labels: labels,
+      deployments: deployments.map(&:to_report_hash)
+    }
+  end
+
   # To allow FactoryBot to play nicely
   alias save! save
 end

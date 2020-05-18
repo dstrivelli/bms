@@ -32,6 +32,12 @@ class Deployment < Ohm::Model
     image.split(':', 2)
   end
 
+  def to_report_hash
+    hash = attributes.each_with_object({}) { |(k, _), h| h[k] = send(k) }
+    hash[:primary_image] = image
+    hash
+  end
+
   # To allow FactoryBot to play nicely
   alias save! save
 end

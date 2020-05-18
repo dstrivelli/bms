@@ -21,5 +21,5 @@ spec:
           containers:
           - name: curl
             image: byrnedo/alpine-curl
-            command: ["curl", "--fail", "-XPOST", "-d 'id=latest'", {{ include "bms.emailurl" $dot | quote }}]
+            command: ["--fail", "-XPOST", "-d 'id=latest'", {{ include "bms.emailurl" $dot | quote }}]
 {{- end }}

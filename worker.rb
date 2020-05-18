@@ -10,6 +10,8 @@ require 'fileutils'
 require 'logging'
 require 'uri'
 
+require_relative 'version'
+
 # Load all our application requirements
 %w[connectors models].each do |dir|
   # $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
@@ -43,6 +45,15 @@ load_settings(env)
 # Setup database
 redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
 Ohm.redis = Redic.new(redis_host)
+
+# Flush database if the data in Redis is old
+db_version = Ohm.redis.call('GET', 'version')
+unless db_version == BMS::VERSION
+  print 'Database version mismatch, flushing...'
+  Ohm.redis.call('FLUSHALL')
+  puts 'done.'
+end
+Ohm.redis.call('SET', 'version', BMS::VERSION)
 
 # CONSTANTS
 CPU_ORDERS_OF_MAGNITUDE = {
@@ -176,7 +187,7 @@ begin
     # Example of how to fine tune logging:
     # Logging.logger['Prom'].level = :debug
 
-    @logger.debug 'Starting new refresh.'
+    @logger.info 'Starting new refresh...'
 
     ### Update Nodes
 
@@ -402,22 +413,34 @@ begin
     end
 
     # Generate report
-    @logger.debug 'Generating report.'
-    Report.create(
-      {
-        timestamp: Time.now.to_i,
-        nodes: Node.all.to_a.map(&:to_report_hash),
-        restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
-        unhealthy_pods: Pod.find(healthy: false).to_a.map(&:attributes),
-        health_checks: HealthCheck.all.to_a.map(&:to_report_hash)
-      }
-    )
+    last_report_ran = Report.latest.first&.timestamp || 0
+    if (Time.now.to_i - last_report_ran) > (Settings&.reports&.every || 0)
+      @logger.debug 'Generating report.'
+      Report.create(
+        {
+          timestamp: Time.now.to_i,
+          nodes: Node.all.to_a.map(&:to_report_hash),
+          restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
+          unhealthy_pods: Pod.find(healthy: false).to_a.map(&:attributes),
+          health_checks: HealthCheck.all.to_a.map(&:to_report_hash)
+        }
+      )
+    end
+
+    # Purge older reports
+    @logger.debug 'Purging old reports...'
+    old_reports = Ohm.redis.call('ZREVRANGEBYSCORE', 'Report:latest', Time.now.to_i - Settings.reports.purge_older_than, 0)
+    old_reports.each do |id|
+      report = Report[id]
+      @logger.debug "Deleting report with timestamp #{report.strftime}."
+      report.delete
+    end
 
     # Update docker labels
     # Settings&.nexus&.repos&.keys&.each { |repo| refresh_labels(repo) }
 
     sleep_for = Settings&.worker&.sleep || 300
-    @logger.debug "Sleeping for #{sleep_for} seconds..."
+    @logger.info "Sleeping for #{sleep_for} seconds..."
     sleep(sleep_for.to_i)
   end # loop
 rescue Interrupt
