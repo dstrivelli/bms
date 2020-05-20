@@ -58,12 +58,22 @@ Ohm.redis.call('SET', 'version', BMS::VERSION)
 # CONSTANTS
 CPU_ORDERS_OF_MAGNITUDE = {
   m: 1000,
-  n: 1_000_000_000
+  n: 1000**3
 }.freeze
 
 RAM_ORDERS_OF_MAGNITUDE = {
-  Ki: 1000,
-  Mi: 1_000_000
+  Ki: 1024,
+  Mi: 1024**2,
+  Gi: 1024**3,
+  Ti: 1024**4,
+  Pi: 1024**5,
+  Ei: 1024**6,
+  K: 1000,
+  M: 1000**2,
+  G: 1000**3,
+  T: 1000**4,
+  P: 1000**5,
+  E: 1000**6
 }.freeze
 
 def convert_mcores(mcores, precision: 2)
@@ -79,11 +89,18 @@ def convert_mcores(mcores, precision: 2)
   result.round(precision)
 end
 
-def convert_ram(ram, precision: 2)
-  unit = ram[-2].to_sym
-  count = ram[0..-3].to_f
-  result = RAM_ORDERS_OF_MAGNITUDE.keys.include?(unit) ? count / RAM_ORDERS_OF_MAGNITUDE[unit] : count
-  result.round(precision)
+def convert_ram(ram)
+  return 0 if ram.nil?
+
+  ram_regex = /(?<count>[0-9]*)(?<unit>(#{RAM_ORDERS_OF_MAGNITUDE.keys.join('|')}))?$/
+  matches = ram_regex.match(ram)
+  raise "Error in #convert_ram. The value #{ram} does not match the regex." if matches.nil?
+
+  if matches[:unit].nil?
+    matches[:count].to_i
+  else
+    matches[:count].to_i * RAM_ORDERS_OF_MAGNITUDE[matches[:unit].to_sym]
+  end
 end
 
 def fetch_uri(uri)
@@ -133,6 +150,7 @@ end
 
 # Configure logging
 Logging.logger.root.appenders = Logging.appenders.stdout # (layout: Logging.layouts.basic)
+Logging.logger.root.level = Settings&.log_level || :warn
 
 # Helper funcs
 def to_percentage(num, precision: 2)
@@ -301,9 +319,9 @@ begin
           liveness_probe: container&.livenessProbe&.to_h&.deep_stringify_keys,
           readiness_probe: container&.readinessProbe&.to_h&.deep_stringify_keys,
           cpu_requests: convert_mcores(container&.resources&.requests&.cpu),
-          ram_requests: convert_mcores(container&.resources&.requests&.memory),
+          ram_requests: convert_ram(container&.resources&.requests&.memory),
           cpu_limits: convert_mcores(container&.resources&.limits&.cpu),
-          ram_limits: convert_mcores(container&.resources&.limits&.memory)
+          ram_limits: convert_ram(container&.resources&.limits&.memory)
         }
 
         result = current_containers.find(name: attrs[:name])

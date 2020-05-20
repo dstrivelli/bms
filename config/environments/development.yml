@@ -13,8 +13,8 @@ email:
     address: 'localhost'
     port: 1025
 reports:
-  every: 300
-  purge_older_than: 300
+  every: 30
+  purge_older_than: 900
 kubernetes:
   url: https://api.prod8.bip.va.gov:443
   auth_options:

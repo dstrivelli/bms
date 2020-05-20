@@ -26,25 +26,25 @@ class Node < Ohm::Model
 
   collection :pods, :Pod
 
-  # rubocop:disable Security/Eval
   %w[cpu ram].each do |resource|
     %w[requests limits].each do |stat|
       define_method "#{resource}_#{stat}" do
         total = 0.0
         pods.each do |pod|
-          total += eval("pod.#{resource}_#{stat}", binding, __FILE__, __LINE__)
+          total += pod.send("#{resource}_#{stat}")
         end
         total
       end
     end
   end
 
-  %w[cpu ram].each do |resource|
-    define_method "#{resource}_utilization_percent" do
-      eval("(#{resource}_utilized / #{resource}_allocatable * 100).round(2)", binding, __FILE__, __LINE__)
-    end
+  def cpu_utilization_percent
+    (cpu_utilized / cpu_allocatable * 100).round(2)
   end
-  # rubocop:enable Security/Eval
+
+  def ram_utilization_percent
+    (ram_utilized / ram_allocatable * 100).round(2)
+  end
 
   def cpu_allocation_percent
     (cpu_requests / cpu_allocatable * 100).round(2)
@@ -59,7 +59,7 @@ class Node < Ohm::Model
     h = {}
     # Enumerate attributes
     fields.each do |k|
-      h[k.to_sym] = eval("self.#{k}", binding, __FILE__, __LINE__) # rubocop:disable Security/Eval
+      h[k.to_sym] = send(k)
     end
     h # Return dat hash!
   end

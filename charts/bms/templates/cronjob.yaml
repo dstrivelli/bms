@@ -16,10 +16,10 @@ spec:
     spec:
       template:
         spec:
-          serviceAccount: {{ $dot.Values.serviceaccount.name }}
           restartPolicy: OnFailure
           containers:
           - name: curl
-            image: byrnedo/alpine-curl
-            command: ["--fail", "-XPOST", "-d 'id=latest'", {{ include "bms.emailurl" $dot | quote }}]
+            image: zanloy/alpine-va:1.0.1
+            imagePullPolicy: IfNotPresent
+            command: ['bash', '-c', 'curl -sS --fail -d "id=latest" {{ include "bms.emailurl" $dot | quote }}']
 {{- end }}
