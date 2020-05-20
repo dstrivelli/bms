@@ -1,7 +1,7 @@
 log_level: warn
 reports:
-  every: 1800
-  purge_older_than: 86400
+  every: 900 # 15m
+  purge_older_than: 86400 # 24h
 redis: redis://localhost:6379
 uris: {}
 worker:

@@ -433,10 +433,11 @@ begin
     # Generate report
     last_report_ran = Report.latest.first&.timestamp || 0
     if (Time.now.to_i - last_report_ran) > (Settings&.reports&.every || 0)
-      @logger.debug 'Generating report.'
+      timestamp = Time.now.to_i
+      @logger.info "Generating new report with timestamp: #{timestamp}."
       Report.create(
         {
-          timestamp: Time.now.to_i,
+          timestamp: timestamp,
           nodes: Node.all.to_a.map(&:to_report_hash),
           restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
           unhealthy_pods: Pod.find(healthy: false).to_a.map(&:attributes),
@@ -450,7 +451,7 @@ begin
     old_reports = Ohm.redis.call('ZREVRANGEBYSCORE', 'Report:latest', Time.now.to_i - Settings.reports.purge_older_than, 0)
     old_reports.each do |id|
       report = Report[id]
-      @logger.debug "Deleting report with timestamp #{report.strftime}."
+      @logger.info "Purging old report: #{report.strftime}."
       report.delete
     end
 
