@@ -2,3 +2,4 @@ tasks:
   - write up schema for dry-validation of settings.yml
   - add tooling for post scanning tests
   - pull pod restarts from metrics api instead of prometheus
+  - fix fail on connection refused from healthcheck endpoints
