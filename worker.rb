@@ -116,7 +116,7 @@ def fetch_uri(uri)
     http.get(uri, headers)
   rescue Net::HTTPRequestTimeOut
     Net::HTTPResponse.new('', 408, 'TIMEDOUT')
-  rescue SocketError
+  rescue SocketError, Errno::ECONNREFUSED
     Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
   end
 end
