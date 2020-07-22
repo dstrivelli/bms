@@ -106,19 +106,17 @@ end
 def fetch_uri(uri)
   # Get HTTP response from URI
   uri = URI(uri)
-  begin
-    http = Net::HTTP.new(uri.host, uri.port)
-    if uri.scheme == 'https'
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    end
-    headers = Settings&.url_options&.headers || nil
-    http.get(uri, headers)
-  rescue Net::HTTPRequestTimeOut
-    Net::HTTPResponse.new('', 408, 'TIMEDOUT')
-  rescue SocketError, Errno::ECONNREFUSED
-    Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
+  http = Net::HTTP.new(uri.host, uri.port)
+  if uri.scheme == 'https'
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
   end
+  headers = Settings&.url_options&.headers || nil
+  http.get(uri, headers)
+rescue Net::HTTPRequestTimeOut, Net::OpenTimeout
+  Net::HTTPResponse.new('', 408, 'TIMEDOUT')
+rescue SocketError, Errno::ECONNREFUSED
+  Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
 end
 
 def refresh_labels(repo_name)
@@ -264,6 +262,7 @@ begin
       @logger.debug "Getting info for Namespace(#{elem.metadata.name})"
 
       attrs = {
+        uid: elem.metadata.uid,
         name: elem.metadata.name,
         annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
         labels: elem.metadata&.labels&.to_h&.stringify_keys
@@ -285,22 +284,117 @@ begin
       end
     end
 
-    ### Pods
+    ## Deployments
 
-    pods = kubectl.get_pods
+    deployments = extensions.get_deployments
 
-    pods.each do |elem|
-      @logger.debug "Getting info for pod: #{elem.metadata.namespace}/#{elem.metadata.name}"
+    deployments.each do |elem|
+      @logger.debug "Getting info for Deployment(#{elem.metadata.name})"
+
+      attrs = {
+        uid: elem.metadata.uid,
+        namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
+        name: elem.metadata.name,
+        annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
+        labels: elem.metadata&.labels&.to_h&.stringify_keys,
+        replicas: elem.status.replicas,
+        ready_replicas: elem.status.readyReplicas,
+        images: []
+      }
+
+      elem.spec.template.spec.containers.each { |c| attrs[:images] << c.image }
+
+      if (cached = Deployment.with(:uid, attrs[:uid]))
+        cached.update(attrs)
+      else
+        Deployment.create(attrs)
+      end
+    end
+
+    @logger.debug 'Cleaning up any extra Deployments in cache that no longer exist.'
+    deployments_array = deployments.map { |elem| elem.metadata.uid }
+    Deployment.all.each do |elem|
+      unless deployments_array.include? elem.uid
+        @logger.debug "Deleting Deployment(#{elem.name}) from cache."
+        elem.delete
+      end
+    end
+
+    ### ReplicaSets
+
+    @logger.debug 'Processing ReplicaSets...'
+
+    replica_sets = extensions.get_replica_sets
+
+    replica_sets.each do |elem|
+      @logger.debug "Getting info for replicaset: #{elem.metadata.namespace}/#{elem.metadata.name}."
 
       attrs = {
         uid: elem.metadata.uid,
         name: elem.metadata.name,
         namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
+        deployment_id: Deployment.with(:uid, elem.metadata&.ownerReferences&.first&.uid)&.id
+      }
+
+      if (cached = ReplicaSet.with(:uid, attrs[:uid]))
+        cached.update(attrs)
+      else
+        ReplicaSet.create(attrs)
+      end
+    end
+
+    ### Pods
+
+    pods = kubectl.get_pods
+
+    pods.each do |elem|
+      @logger.debug "Getting info for pod: #{elem.metadata.namespace}/#{elem.metadata.name}."
+
+      attrs = {
+        uid: elem.metadata.uid,
+        name: elem.metadata.name,
+        created_at: elem.metadata.creationTimestamp,
+        namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
+        deployment_id: ReplicaSet.with(:uid, elem.metadata&.ownerReferences&.first&.uid)&.deployment&.id,
         node_id: Node.with(:name, elem.spec.nodeName).id,
         annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
         labels: elem.metadata&.labels&.to_h&.stringify_keys,
         state: elem.status.phase
       }
+
+      # Process "conditions"
+      elem[:status][:conditions].each do |condition|
+        condition = condition.to_h
+        case condition[:type]
+        when 'PodScheduled'
+          attrs[:scheduled] = condition[:status] == 'True'
+          attrs[:scheduled_at] = condition[:lastTransitionTime]
+          attrs[:scheduled_message] = condition.key?(:message) ? condition[:message] : ''
+        when 'Initialized'
+          attrs[:initialized] = condition[:status] == 'True'
+          attrs[:initialized_at] = condition[:lastTransitionTime]
+          attrs[:initialized_message] = condition.key?(:message) ? condition[:message] : ''
+        when 'Ready'
+          attrs[:ready] = condition[:status] == 'True'
+          attrs[:ready_at] = condition[:lastTransitionTime]
+          attrs[:ready_message] = condition.key?(:message) ? condition[:message] : ''
+        when 'ContainersReady'
+          attrs[:containers_ready] = condition[:status] == 'True'
+          attrs[:containers_ready_at] = condition[:lastTransitionTime]
+          attrs[:containers_ready_message] = condition.key?(:message) ? condition[:message] : ''
+        end
+      end
+
+      # Parse container_statuses
+      attrs[:restarts] = 0
+      ready = 0
+      total = 0
+      elem[:status][:containerStatuses].each do |status|
+        attrs[:restarts] += status[:restartCount]
+        total += 1
+        ready += 1 if status.ready
+      end
+      attrs[:ready_string] = "#{ready}/#{total}"
 
       if (pod = Pod.with(:uid, attrs[:uid]))
         pod.update(attrs)
@@ -330,46 +424,15 @@ begin
         else
           Container.create(attrs)
         end
+        # TODO: Purge any containers that are no longer there. Do we even want them as a separate model since K8 doesn't treat them separately?
       end
     end
 
     # Cleanup any pods in cache that do not exist anymore
     pods_array = pods.map { |elem| elem.metadata.uid }
     Pod.all.each do |elem|
-      elem.delete unless pods_array.include? elem.uid
-    end
-
-    ## Deployments
-
-    deployments = extensions.get_deployments
-
-    deployments.each do |elem|
-      @logger.debug "Getting info for Deployment(#{elem.metadata.name})"
-
-      attrs = {
-        namespace_id: Namespace.with(:name, elem.metadata.namespace)&.id,
-        name: elem.metadata.name,
-        annotations: elem.metadata&.annotations&.to_h&.stringify_keys,
-        labels: elem.metadata&.labels&.to_h&.stringify_keys,
-        replicas: elem.status.replicas,
-        ready_replicas: elem.status.readyReplicas,
-        images: []
-      }
-
-      elem.spec.template.spec.containers.each { |c| attrs[:images] << c.image }
-
-      if (cached = Deployment.with(:name, attrs[:name]))
-        cached.update(attrs)
-      else
-        Deployment.create(attrs)
-      end
-    end
-
-    @logger.debug 'Cleaning up any extra Deployments in cache that no longer exist.'
-    deployments_array = deployments.map { |elem| elem.metadata.name }
-    Deployment.all.each do |elem|
-      unless deployments_array.include? elem.name
-        @logger.debug "Deleting Deployment(#{elem.name}) from cache"
+      unless pods_array.include? elem.uid
+        @logger.debug "Deleting Pod(#{elem.name}) from cache."
         elem.delete
       end
     end
@@ -435,12 +498,22 @@ begin
     if (Time.now.to_i - last_report_ran) > (Settings&.reports&.every || 0)
       timestamp = Time.now.to_i
       @logger.info "Generating new report with timestamp: #{timestamp}."
+      @logger.debug 'Enumerating pods to get unhealthy ones.'
+      unhealthy_pods = Pod.all.each_with_object([]) do |pod, rtn|
+        if %w[Running Succeeded].include?(pod.state)
+          ready, total = pod.ready_string.split('/')
+          rtn << pod unless ready == total
+        else
+          rtn << pod
+        end
+      end
+
       Report.create(
         {
           timestamp: timestamp,
           nodes: Node.all.to_a.map(&:to_report_hash),
           restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
-          unhealthy_pods: Pod.find(healthy: false).to_a.map(&:attributes),
+          unhealthy_pods: unhealthy_pods.map { |elem| elem.to_hash.slice(:namespace, :name, :ready_string, :restarts) },
           health_checks: HealthCheck.all.to_a.map(&:to_report_hash)
         }
       )

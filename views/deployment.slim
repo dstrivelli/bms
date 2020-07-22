@@ -1,0 +1,23 @@
+div class='container-fluid'
+  div class='row'
+    div class='col'
+      table class='table'
+        thead class='black white-text'
+          tr
+            th Pod
+            th Images
+            th Ready
+            th Restarts
+            th Created At
+        tbody
+          - @deployment.pods.each do |pod|
+            tr
+              td = pod.name
+              td = pod.images
+              - ready, total = pod.ready_string.split('/')
+              - if ready == total
+                td class='text-center' = pod.ready_string
+              - else
+                td class='text-center red white-text' = pod.ready_string
+              td class='text-center' = pod.restarts
+              td = pod.created_at.rfc2822

@@ -34,6 +34,7 @@ begin
 rescue LoadError
 end
 
+# Example: rake 'setup[user,pass]' # note, no quotes
 desc 'Load authentication tokens for testing'
 task :setup, [:username, :password] do |_, args|
   require 'faraday'

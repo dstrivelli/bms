@@ -58,7 +58,9 @@ Ohm.redis = Redic.new(redis_host)
   Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }
 end
 
-map('/dashboard') { run DashboardController }
-map('/labels')    { run LabelsController }
-map('/reports')   { run ReportsController }
-map('/')          { run ApplicationController }
+map('/apps')        { run AppsController }
+map('/dashboard')   { run DashboardController }
+map('/deployments') { run DeploymentsController }
+map('/labels')      { run LabelsController }
+map('/reports')     { run ReportsController }
+map('/')            { run ApplicationController }

@@ -10,6 +10,10 @@ class DashboardController < ApplicationController
   get '/' do
     @header = 'BMS Dashboard'
     @nodes = Node.all
+    @apps = []
+    Namespace.apps.each do |app|
+      @apps << { name: app, namespaces: Namespace.find(app: app).map(&:to_report_hash) }
+    end
     @namespaces = Namespace.all
     @deployments = Deployment.all
     @payload = {

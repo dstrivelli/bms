@@ -9,9 +9,12 @@ class Deployment < Ohm::Model
   include Ohm::DataTypes
 
   reference :namespace, :Namespace
+  collection :pods, :Pod
 
   attribute :name
-  unique :name
+  index :name
+  attribute :uid
+  unique :uid
   attribute :annotations, Type::Hash
   attribute :labels, Type::Hash
   attribute :images, Type::Array
@@ -30,6 +33,13 @@ class Deployment < Ohm::Model
 
   def image_and_tag
     image.split(':', 2)
+  end
+
+  def ready_string
+    total = pods.count
+    ready = 0
+    pods.count.each { |pod| ready += 1 if pod.ready }
+    "#{ready}/#{total}"
   end
 
   def to_report_hash

@@ -7,8 +7,21 @@ div class='container'
           - light, text = light_for_node(node)
           li class='list-group-item'
             i> class="fas fa-server fa-lg #{light}-text" data-toggle='tooltip' data-placement='bottom' title="#{display_value('hostname', node.hostname)}"
-  h2 class='text-center' Namespaces
+  h2 class='text-center' Apps
   div class='row'
+    - @apps.each_slice((@apps.size / 3.0).ceil).with_index do |slice, idx|
+      div class='col'
+        ul class='list-group'
+          - slice.each do |app|
+            - light, text = light_for_app(app[:name])
+            li class='list-group-item'
+              a href="/apps/#{app[:name]}"
+                h5 class='mb-0'
+                  span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
+                    = app[:namespaces].size
+                  = display_value('name', app[:name])
+  /h2 class='text-center' Namespaces
+  /div class='row'
     - @namespaces.each_slice((@namespaces.size / 3.0).ceil).with_index do |slice, idx|
       div class='col'
         div id="namespaces_#{idx}" class='accordion md-accordion' role='tablist' aria-multiselectable='true'
@@ -17,7 +30,7 @@ div class='container'
             div class='card'
               div id="namespace_#{namespace.id}" class='card-header' role='tab'
                 a data-toggle='collapse' data-target="#collapse_#{namespace.id}" href='#' aria-expanded='false' aria-controls="collapse_#{namespace.id}"
-                  h5  class='mb-0'
+                  h5 class='mb-0'
                     span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
                       = namespace.deployments.size
                     = display_value('name', namespace.name)

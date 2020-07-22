@@ -103,6 +103,24 @@ module DisplayHelpers
     [light, text]
   end
 
+  def light_for_app(app)
+    light = :green
+    namespaces = Namespace.find(app: app)
+    text = ["#{app} has #{namespaces.size} namespaces."]
+    namespaces.each do |namespace|
+      ns_light, ns_text = light_for_namespace(namespace)
+      case ns_light
+      when :yellow
+        light = :yellow unless light == :red
+        text += ns_text.map { |elem| "#{namespace.name}/#{elem}" }
+      when :red
+        light = :red
+        text += ns_text.map { |elem| "#{namespace.name}/#{elem}" }
+      end
+    end
+    [light, text]
+  end
+
   def light_for_namespace(namespace)
     light = :green
     text = []
@@ -128,7 +146,7 @@ module DisplayHelpers
     # Check replicas
     if deployment.replicas != deployment.ready_replicas
       light = :yellow unless light == :red
-      text << 'Desired replicas does not match ready replicas.'
+      text << "Desired replicas (#{deployment.replicas}) does not match ready replicas (#{deployment.ready_replicas})."
       if deployment.ready_replicas.zero?
         light = :red
         text << 'The ready replicas is zero.'

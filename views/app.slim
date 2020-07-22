@@ -1,0 +1,28 @@
+div class='container-fluid'
+  div class='row'
+    div class='col'
+      table class='table'
+        thead class='black white-text'
+          tr
+            th Namespace
+            th Deployment
+            th Image
+            th Tag
+            th Replicas
+        tbody
+          - @namespaces.each do |namespace|
+            - namespace.deployments.each.with_index do |deployment, idx|
+              - light, text = light_for_namespace(namespace)
+              - image, tag = deployment.image_and_tag
+              tr
+                - if idx == 0
+                  td rowspan=namespace.deployments.size
+                    a id=namespace.name
+                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
+                      = namespace.deployments.size
+                    = namespace.name
+                td
+                  a href="/deployments/#{deployment.uid}" = deployment.name
+                td = image
+                td = tag
+                td class="#{'red white-text' unless deployment.ready_replicas == deployment.replicas}" = "#{deployment.ready_replicas}/#{deployment.replicas}"
