@@ -14,12 +14,8 @@ class DashboardController < ApplicationController
     Namespace.apps.each do |app|
       @apps << { name: app, namespaces: Namespace.find(app: app).map(&:to_report_hash) }
     end
+    @healthchecks = HealthCheck.all.to_a.map(&:to_report_hash)
     @namespaces = Namespace.all
-    @deployments = Deployment.all
-    @payload = {
-      'nodes' => @nodes.map(&:attributes),
-      'namespaces' => @namespaces.map(&:to_report_hash)
-    }
     respond_to do |format|
       format.html { slim :dashboard }
       format.json { @payload.to_json }

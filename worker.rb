@@ -437,6 +437,27 @@ begin
       end
     end
 
+    # Yo, kubes, what's happened lately?
+    @logger.debug 'Processing events...'
+    events = kubectl.get_events
+
+    events.each do |event|
+      @logger.debug "Getting info for event: #{event.metadata[:namespace]}/#{event.metadata[:name]}"
+      attrs = event.to_hash.slice(:lastTimestamp, :message, :reason)
+      attrs[:uid] = event.metadata[:uid]
+      attrs[:name] = event.metadata[:name]
+      attrs[:kind] = event.metadata[:kind]
+      # Link namespace
+      attrs[:namespace_id] = Namespace.with(:name, event.metadata[:namespace]).id
+
+      if (cached = Event.with(:uid, attrs[:uid]))
+        cached.update(attrs)
+      else
+        cached = Event.create(attrs)
+      end
+    end
+
+
     # Health Checks
     Settings.uris.each do |name, values|
       case values
@@ -476,7 +497,11 @@ begin
                   result: 'ERROR: Invalid result_type.'
                 }
               end
-      attrs[:details] = resp.body
+      begin
+        attrs[:details] = resp.body
+      rescue
+        attrs[:details] = 'ERROR!'
+      end
       if (cached = HealthCheck.with(:name, attrs[:name]))
         cached.update(attrs)
       else

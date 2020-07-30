@@ -22,6 +22,7 @@ class Namespace < Ohm::Model
   collection :deployments, :Deployment
   collection :replica_sets, :ReplicaSet
   collection :pods, :Pod
+  collection :events, :Event
 
   def to_report_hash
     {
