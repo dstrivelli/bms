@@ -36,7 +36,7 @@ class Namespace < Ohm::Model
   def self.apps
     values = []
     all.each do |ns|
-      values << ns.app if (ns.app and ns.app != 'nil')
+      values << ns.app if ns.app && ns.app != 'nil'
     end
     values.uniq.sort
   end

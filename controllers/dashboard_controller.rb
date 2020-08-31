@@ -11,9 +11,6 @@ class DashboardController < ApplicationController
     @header = 'BMS Dashboard'
     @nodes = Node.all
     @apps = Namespace.apps
-    #Namespace.apps.each do |app|
-    #  @apps << { name: app, namespaces: Namespace.find(app: app).map(&:to_report_hash) }
-    #end
     @healthchecks = HealthCheck.all
     @namespaces = Namespace.all
     @orphans = @namespaces.find(app: 'nil')

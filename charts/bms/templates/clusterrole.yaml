@@ -18,6 +18,7 @@ rules:
       - pods
       - persistantvolumes
       - persistantvolumeclaims
+      - replicasets
       - services
     verbs:
       - get

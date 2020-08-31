@@ -6,7 +6,6 @@ require 'ohm/contrib'
 ##
 # Model to describe health checks to urls
 class HealthCheck < Ohm::Model
-  #include Ohm::Callbacks
   include Ohm::DataTypes
 
   attribute :name

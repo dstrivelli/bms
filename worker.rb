@@ -453,10 +453,9 @@ begin
       if (cached = Event.with(:uid, attrs[:uid]))
         cached.update(attrs)
       else
-        cached = Event.create(attrs)
+        Event.create(attrs)
       end
     end
-
 
     # Health Checks
     Settings.uris.each do |name, values|
@@ -481,7 +480,8 @@ begin
                 {
                   name: name.to_s,
                   uri: values[:uri],
-                  result: json[values[:value]]
+                  result: json[values[:value]],
+                  health: json[values[:value]]
                 }
               when :response_code
                 if values.key? :response_codes
@@ -516,7 +516,7 @@ begin
               end
       begin
         attrs[:details] = resp.body
-      rescue
+      rescue StandardError
         attrs[:details] = 'ERROR!'
       end
       if (cached = HealthCheck.with(:name, attrs[:name]))

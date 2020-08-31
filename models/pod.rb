@@ -91,11 +91,7 @@ class Pod < Ohm::Model
   protected
 
   def before_save
-    if deployment == nil
-      self.orphan = true
-    else
-      self.orphan = false
-    end
+    self.orphan = deployment.nil?
     case state
     when 'Running', 'Succeeded'
       self.healthy = true
