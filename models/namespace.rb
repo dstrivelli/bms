@@ -22,6 +22,7 @@ class Namespace < Ohm::Model
   collection :deployments, :Deployment
   collection :replica_sets, :ReplicaSet
   collection :pods, :Pod
+  collection :events, :Event
 
   def to_report_hash
     {
@@ -35,7 +36,7 @@ class Namespace < Ohm::Model
   def self.apps
     values = []
     all.each do |ns|
-      values << ns.app if ns.app
+      values << ns.app if (ns.app and ns.app != 'nil')
     end
     values.uniq.sort
   end
@@ -51,8 +52,8 @@ class Namespace < Ohm::Model
       self.app = matches.named_captures['app']
       self.env = matches.named_captures['env']
     else
-      self.app = nil
-      self.env = nil
+      self.app = 'nil'
+      self.env = 'nil'
     end
   end
 end

@@ -437,6 +437,27 @@ begin
       end
     end
 
+    # Yo, kubes, what's happened lately?
+    @logger.debug 'Processing events...'
+    events = kubectl.get_events
+
+    events.each do |event|
+      @logger.debug "Getting info for event: #{event.metadata[:namespace]}/#{event.metadata[:name]}"
+      attrs = event.to_hash.slice(:lastTimestamp, :message, :reason)
+      attrs[:uid] = event.metadata[:uid]
+      attrs[:name] = event.metadata[:name]
+      attrs[:kind] = event.metadata[:kind]
+      # Link namespace
+      attrs[:namespace_id] = Namespace.with(:name, event.metadata[:namespace]).id
+
+      if (cached = Event.with(:uid, attrs[:uid]))
+        cached.update(attrs)
+      else
+        cached = Event.create(attrs)
+      end
+    end
+
+
     # Health Checks
     Settings.uris.each do |name, values|
       case values
@@ -463,11 +484,28 @@ begin
                   result: json[values[:value]]
                 }
               when :response_code
-                msg = values[:response_codes][resp.code.to_s.to_sym] || resp.message
+                if values.key? :response_codes
+                  resp_sym = resp.code.to_s.to_sym
+                  if values[:response_codes].key? resp_sym
+                    if values[:resonse_codes][resp_sym].class == String
+                      msg = values[:response_codes][resp_sym]
+                    else
+                      msg = values[:response_code][resp_sym]&.text || 'Unknown'
+                      health = values[:response_code][resp_sym]&.health || 'fail'
+                    end
+                  else
+                    msg = resp.message
+                    health = (resp.code == '200' ? 'pass' : 'fail')
+                  end
+                else
+                  msg = resp.message
+                  health = (resp.code == '200' ? 'pass' : 'fail')
+                end
                 {
                   name: name.to_s,
                   uri: values[:uri],
-                  result: "#{resp.code} #{msg}"
+                  result: "#{resp.code} #{msg}",
+                  health: health
                 }
               else
                 {
@@ -476,7 +514,11 @@ begin
                   result: 'ERROR: Invalid result_type.'
                 }
               end
-      attrs[:details] = resp.body
+      begin
+        attrs[:details] = resp.body
+      rescue
+        attrs[:details] = 'ERROR!'
+      end
       if (cached = HealthCheck.with(:name, attrs[:name]))
         cached.update(attrs)
       else

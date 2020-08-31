@@ -25,6 +25,8 @@ class Pod < Ohm::Model
   attribute :ready_string
   attribute :healthy, Type::Boolean
   index :healthy
+  attribute :orphan, Type::Boolean
+  index :orphan
   attribute :restarts, Type::Integer
   attribute :scheduled, Type::Boolean
   attribute :scheduled_at, Type::Time
@@ -89,6 +91,11 @@ class Pod < Ohm::Model
   protected
 
   def before_save
+    if deployment == nil
+      self.orphan = true
+    else
+      self.orphan = false
+    end
     case state
     when 'Running', 'Succeeded'
       self.healthy = true

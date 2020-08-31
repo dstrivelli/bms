@@ -34,11 +34,21 @@ uris:
     uri: 'https://vault.prod8.bip.va.gov/v1/sys/health?standbyok'
     type: response_code
     response_codes:
-      429: STANDBY
-      472: RECOVERY MODE
-      473: PERFORMANCE STANDBY
-      501: UNINITIALIZED
-      503: SEALED
+      429:
+        text: STANDBY
+        health: 'pass'
+      472:
+        text: 'RECOVERY MODE'
+        health: 'fail'
+      473:
+        text: 'PERFORMANCE STANDBY'
+        health: 'fail'
+      501:
+        text: 'UNINITIALIZED'
+        health: 'fail'
+      503:
+        text: 'SEALED'
+        health: 'fail'
 nexus:
   repos:
     prod: 'https://container-registry.prod8.bip.va.gov/'
