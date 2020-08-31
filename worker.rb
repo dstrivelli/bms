@@ -484,11 +484,28 @@ begin
                   result: json[values[:value]]
                 }
               when :response_code
-                msg = values[:response_codes][resp.code.to_s.to_sym] || resp.message
+                if values.key? :response_codes
+                  resp_sym = resp.code.to_s.to_sym
+                  if values[:response_codes].key? resp_sym
+                    if values[:resonse_codes][resp_sym].class == String
+                      msg = values[:response_codes][resp_sym]
+                    else
+                      msg = values[:response_code][resp_sym]&.text || 'Unknown'
+                      health = values[:response_code][resp_sym]&.health || 'fail'
+                    end
+                  else
+                    msg = resp.message
+                    health = (resp.code == '200' ? 'pass' : 'fail')
+                  end
+                else
+                  msg = resp.message
+                  health = (resp.code == '200' ? 'pass' : 'fail')
+                end
                 {
                   name: name.to_s,
                   uri: values[:uri],
-                  result: "#{resp.code} #{msg}"
+                  result: "#{resp.code} #{msg}",
+                  health: health
                 }
               else
                 {

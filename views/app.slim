@@ -17,10 +17,9 @@ div class='container-fluid'
               tr
                 - if idx == 0
                   td rowspan=namespace.deployments.size
-                    a id=namespace.name
                     span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
                       = namespace.deployments.size
-                    = namespace.name
+                    a id=namespace.name href="/namespace/#{namespace.id}" = namespace.name
                 td
                   a href="/deployments/#{deployment.uid}" = deployment.name
                 td = image

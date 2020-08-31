@@ -1,55 +1,63 @@
-div class='container'
-  h2 class='text-center' Kubernetes Nodes
-  div class='row'
-    div class='col'
-      ul class='list-group list-group-horizontal'
+div class='row'
+  div class='col-2'
+    h2 class='text-center' K8
+    table class='table'
+      thead
+        tr
+          th Node
+          th Status
+      tbody
         - @nodes.each do |node|
           - light, text = light_for_node(node)
-          li class='list-group-item'
-            i> class="fas fa-server fa-lg #{light}-text" data-toggle='tooltip' data-placement='bottom' title="#{display_value('hostname', node.hostname)}"
-  h2 class='text-center' Apps
-  div class='row'
+          tr
+            td = display_value('hostname', node.hostname)
+            td
+              span> class="badge badge-#{bootstrap_color_for(light)}"
+                = node.conditions.join("\n")
+  div class='col'
+    h2 class='text-center' Apps
     - if @apps.size > 0
-      - @apps.each_slice((@apps.size / 3.0).ceil).with_index do |slice, idx|
-        div class='col'
-          ul class='list-group'
-            - slice.each do |app|
-              - light, text = light_for_app(app[:name])
-              li class='list-group-item'
-                a href="/apps/#{app[:name]}"
-                  h5 class='mb-0'
-                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
-                      = app[:namespaces].size
-                    = display_value('name', app[:name])
-    - else
-      div class='col'
-        p There are 0 apps in the database.
-  h2 class='text-center' URI Checks
-  div class='row'
-    == slim :_table, locals: { table: @healthchecks }
-  /h2 class='text-center' Namespaces
-  /div class='row'
-    - @namespaces.each_slice((@namespaces.size / 3.0).ceil).with_index do |slice, idx|
-      div class='col'
-        div id="namespaces_#{idx}" class='accordion md-accordion' role='tablist' aria-multiselectable='true'
-          - slice.each do |namespace|
-            - light, text = light_for_namespace(namespace)
-            div class='card'
-              div id="namespace_#{namespace.id}" class='card-header' role='tab'
-                a data-toggle='collapse' data-target="#collapse_#{namespace.id}" href='#' aria-expanded='false' aria-controls="collapse_#{namespace.id}"
-                  h5 class='mb-0'
-                    span> class="badge badge-#{bootstrap_color_for(light)} badge-pill" title=text.join("\n")
-                      = namespace.deployments.size
-                    = display_value('name', namespace.name)
-              div id="collapse_#{namespace.id}" class='collapse' aria-labelledby="namespace_#{namespace.id}" data-parent="#namespaces_#{idx}"
-                ul class='list-group list-group-flush'
-                  - namespace.deployments.each do |deployment|
-                    - dlight, dtext = light_for_deployment(deployment)
-                    li class='list-group-item'
-                      div class='media'
-                        /img src="img/dot-#{dlight}-20px.png" class="mr-3"
-                        i> class="fas fa-circle #{dlight}-text mr-3" title=dtext.join("\n")
-                        div class='media-body'
-                          h5 class='mt-0'
-                            = display_value('name', deployment.name)
-                          = display_value('image', deployment.image)
+      div class='row'
+        - @apps.each_slice((@apps.size / 2.0).ceil).with_index do |slice, idx|
+          div class='col-6'
+            table class='table'
+              thead
+                tr
+                  th App
+                  th Environments
+              tbody
+                - slice.each do |app|
+                  tr
+                    td = app
+                    td
+                      - %w[prod prodtest preprod perf cola].each do |env|
+                        - if (namespace = Namespace.with(:name, "#{app}-#{env}"))
+                          - light, text = light_for_namespace(namespace)
+                          a href="/namespace/#{namespace.id}"
+                            span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
+                              = env.titleize
+                        - else
+                          span> class="badge badge-dark badge-pill"
+                - if idx == 1 and @orphans.size > 0
+                  tr
+                    td platform
+                    td
+                      - @orphans.each do |namespace|
+                        - light, text = light_for_namespace(namespace)
+                        a href="/namespace/#{namespace.id}"
+                          span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
+                            = namespace.name
+  div class='col-2'
+    h2 class='text-center' URI Checks
+    table class='table'
+      thead
+        tr
+          th Name
+          th Result
+      tbody
+        - @healthchecks.each do |check|
+          tr
+            td = check.name
+            td
+              span> class="badge badge-#{bootstrap_color_for(check.health)}"
+                = check.result

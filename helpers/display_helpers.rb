@@ -48,11 +48,11 @@ module DisplayHelpers
   def bootstrap_color_for(value)
     value = value.to_sym
     case value
-    when :green, :success
+    when :green, :success, :true, :pass
       'success'
     when :alert, :warning, :yellow
       'warning'
-    when :danger, :error, :red
+    when :danger, :error, :red, :false, :fail
       'danger'
     else
       value.to_s

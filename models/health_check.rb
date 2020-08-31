@@ -14,7 +14,8 @@ class HealthCheck < Ohm::Model
   attribute :uri
   attribute :result
   attribute :details
-  attribute :healthy, Type::Boolean
+  attribute :health # Needs to be 'pass or 'fail'
+  index :health
 
   def to_report_hash
     {

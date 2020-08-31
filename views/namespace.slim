@@ -1,0 +1,39 @@
+div class='container-fluid'
+  - if @namespace.nil?
+    h5 class='text-center' No namespace found with that ID.
+  - else
+    h3 Deployments
+    div class='row'
+      div class='col'
+        table class='table'
+          thead class='black white-text'
+            tr
+              th Deployment
+              th Image
+              th Tag
+              th Replicas
+          tbody
+            - @namespace.deployments.each do |deployment|
+              - light, text = light_for_deployment(deployment)
+              - image, tag = deployment.image_and_tag
+              tr
+                td
+                  a href="/deployments/#{deployment.uid}" = deployment.name
+                td = image
+                td = tag
+                td class="#{'red white-text' unless deployment.ready_replicas == deployment.replicas}" = "#{deployment.ready_replicas}/#{deployment.replicas}"
+    /- binding.pry
+    /- orphans = @namespace.pods.find()
+    h3 Events
+    table class='table'
+      thead class='black white-text'
+        tr
+          th Timestamp
+          th Reason
+          th Message
+      tbody
+        - @namespace.events.each do |event|
+          tr
+            td = event.lastTimestamp
+            td = event.reason
+            td = event.message
