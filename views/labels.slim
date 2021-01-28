@@ -1,32 +1,28 @@
-- if @repos
-  div class='row d-flex justify-content-center mb-3'
-    div class='btn-group' role='group'
-      - @repos.each do |repo|
-        a class="btn btn-primary #{active?('repo', repo)}" role='button' href="/labels/#{repo}"
-          = repo
-
-- if @error
-  p = @error
-
-- if @images
-  div class='row d-flex justify-content-center'
-    div class='col-10'
-      div id='labelsTree' class='treeview border'
-        h6 class='pt-3 pl-3' Images
-        hr
-        ul class='mb-1 pl-3 pb-2'
-          - @images.each do |img|
-            li
-              i> class='fas fa-angle-right rotate'
-              span
-                = "#{img[:name]} (#{img[:tags].length})"
-              - if img[:tags]
-                ul class='nested'
-                  - img[:tags].each do |tag, labels|
-                    li
-                      i> class='fas fa-angle-right rotate'
-                      span = tag
-                      ul class='nested'
-                        - labels.each do |key, value|
-                          li
-                            span = "#{key} = #{value}"
+div id='repoRow' class='row'
+  div class='col-6 text-right'
+    p Docker Registry:
+  div class='col-6'
+    select id='repoSelect' class='form-select' onchange='getImages();'
+      option class="blankSelect" disabled=true selected=true value="" = ""
+      - @repos.each_with_index do |(repo, url), idx|
+        option value=(repo) = repo
+div id='imageRow' class='row hide-me d-none'
+  div class='col-6 text-right'
+    p Image:
+  div class='col-6'
+    select id='imageSelect' class='form-select' onchange='getTags();'
+      option class="blankSelect" disabled=true selected=true value="" = ""
+div id='tagRow' class='row hide-me d-none' onchange='getLabels();'
+  div class='col-6 text-right'
+    p Tag:
+  div class='col-6'
+    select id='tagSelect' class='form-select'
+      option class="blankSelect" disabled=true selected=true value="" = ""
+div id='labelRow' class='row hide-me text-center d-none'
+  div class='col-4'
+  div class='col-4'
+    div id='labelCard' class='card'
+      div class='card-body'
+        h5 class='card-title' Labels
+        p id='labelCardText' class='card-text'
+  div class='col-4'

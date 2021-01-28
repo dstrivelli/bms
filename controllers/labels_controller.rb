@@ -8,20 +8,59 @@ require 'nexus_repo'
 
 # Controller for Labels
 class LabelsController < ApplicationController
-  before { @header = 'Docker Label Scanner' }
-
-  # This has to go last because it's such a greedy match
-  get '/:repo?' do |repo|
+  before do
+    @header = 'Docker Label Scanner'
     @scripts = ['/js/labels.js']
-    @repos = Settings&.nexus&.repos&.keys&.map(&:to_s)
-    @repo = repo || @repos.first
-    begin
-      @images = DockerImage.find(repo: @repo).map(&:to_h)
-    rescue CacheDataNotFoundError => e
-      raise if settings.development?
+    @repos = {
+      'prod8' => 'https://container-registry.prod8.bip.va.gov/',
+      'stage8' => 'https://container-registry.stage8.bip.va.gov/'
+    }
+  end
 
-      @error = e.message
-    end
+  get '/' do
     slim :labels
+  end
+
+  get '/images', provides: :json do
+    param :repo, String, required: true, in: @repos.keys
+
+    resp = HTTParty.get(URI.join(@repos[params[:repo]], '/v2/_catalog'))
+    json = JSON.parse(resp.body, { symbolize_names: true })
+    images = json[:repositories]
+
+    return images.to_json
+  end
+
+  get '/tags', provides: :json do
+    param :repo, String, required: true, in: @repos.keys
+    param :image, String, required: true
+
+    resp = HTTParty.get(URI.join(@repos[params[:repo]], "/v2/#{params[:image]}/tags/list"))
+    json = JSON.parse(resp.body, { symbolize_names: true })
+    tags = json[:tags]
+
+    return tags.to_json
+  end
+
+  get '/labels', provides: :json do
+    param :repo, String, required: true, in: @repos.keys
+    param :image, String, required: true
+    param :tag, String, required: true
+
+    resp = HTTParty.get(URI.join(@repos[params[:repo]], "/v2/#{params[:image]}/manifests/#{params[:tag]}"))
+    json = JSON.parse(resp.body, { symbolize_names: true })
+    labels = {}
+    json[:history].each_with_object(labels) do |elem, obj|
+      parsed = JSON.parse(elem[:v1Compatibility], { symbolize_names: true })
+      begin
+        parsed[:config][:Labels].each do |k, v|
+          obj[k.to_s] = v
+        end
+      rescue NoMethodError
+        nil
+      end
+    end
+
+    return labels.to_json
   end
 end

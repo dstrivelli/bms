@@ -22,6 +22,7 @@ gem 'sassc'                 # SASS Compiler
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'sinatra-flash'         # Allows flash notifications
+gem 'sinatra-param'         # Allows validation and transformation of params
 gem 'sinatra-validation'    # Allows validation of params
 gem 'slim'                  # Templating
 gem 'thin'                  # Use Thin for web handler

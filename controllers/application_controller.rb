@@ -5,6 +5,7 @@ require 'display_helpers'
 require 'sassc'
 require 'sinatra/base'
 require 'sinatra/flash'
+require 'sinatra/param'
 require 'sinatra/respond_with'
 require 'sinatra/validation'
 
@@ -21,6 +22,7 @@ class ApplicationController < Sinatra::Base
   register Sinatra::RespondWith
   register Sinatra::Validation
 
+  helpers Sinatra::Param
   helpers DisplayHelpers
 
   before '/*' do
