@@ -2,6 +2,7 @@
 
 require 'httparty'
 require 'json'
+require 'sinatra/json'
 
 require 'application_controller'
 require 'nexus_repo'
@@ -28,7 +29,7 @@ class LabelsController < ApplicationController
     json = JSON.parse(resp.body, { symbolize_names: true })
     images = json[:repositories]
 
-    return images.to_json
+    json images
   end
 
   get '/tags', provides: :json do
@@ -39,7 +40,7 @@ class LabelsController < ApplicationController
     json = JSON.parse(resp.body, { symbolize_names: true })
     tags = json[:tags]
 
-    return tags.to_json
+    json tags
   end
 
   get '/labels', provides: :json do
@@ -61,6 +62,6 @@ class LabelsController < ApplicationController
       end
     end
 
-    return labels.to_json
+    json labels
   end
 end

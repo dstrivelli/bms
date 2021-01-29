@@ -542,10 +542,12 @@ begin
       timestamp = Time.now.to_i
       @logger.info "Generating new report with timestamp: #{timestamp}."
       @logger.debug 'Enumerating pods to get unhealthy ones.'
-      unhealthy_pods = Pod.all.each_with_object([]) do |pod, rtn|
-        if %w[Running Succeeded].include?(pod.state)
+      unhealthy_pods = Pod.all.sort_by(:namespace).each_with_object([]) do |pod, rtn|
+        if %w[Running].include?(pod.state)
           ready, total = pod.ready_string.split('/')
           rtn << pod unless ready == total
+        elsif %w[Succeeded].include?(pod.state)
+          next
         else
           rtn << pod
         end
@@ -556,7 +558,7 @@ begin
           timestamp: timestamp,
           nodes: Node.all.to_a.map(&:to_report_hash),
           restarts: prom.multi_value('floor(delta(kube_pod_container_status_restarts_total[24h])) > 0', %i[namespace pod]),
-          unhealthy_pods: unhealthy_pods.map { |elem| elem.to_hash.slice(:namespace, :name, :ready_string, :restarts) },
+          unhealthy_pods: unhealthy_pods.map { |elem| elem.to_hash.slice(:namespace, :name, :state, :ready_string, :restarts) },
           health_checks: HealthCheck.all.to_a.map(&:to_report_hash)
         }
       )
