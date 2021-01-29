@@ -14,7 +14,7 @@ clusterrole:
 cronjobs:
   - name: morning-email
     daysofweek: 1-5
-    hour: 11 
+    hour: 11
     minute: 0
   - name: evening-email
     daysofweek: 1-5
