@@ -9,8 +9,8 @@ require 'nexus_repo'
 # Controller for Labels
 class LabelsController < ApplicationController
   before do
-    @header = 'Docker Label Scanner'
-    @scripts = ['/js/labels.js']
+    heading 'Docker Label Scanner'
+    js 'labels.js'
     @repos = {
       'prod8' => 'https://container-registry.prod8.bip.va.gov/',
       'stage8' => 'https://container-registry.stage8.bip.va.gov/'

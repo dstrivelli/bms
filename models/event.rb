@@ -15,7 +15,7 @@ class Event < Ohm::Model
   attribute :name
   attribute :kind
   index :kind
-  attribute :lastTimestamp, Type::Time
+  attribute :lastTimestamp, Type::Integer
   attribute :message
   attribute :reason
 

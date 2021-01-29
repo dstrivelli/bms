@@ -443,7 +443,8 @@ begin
 
     events.each do |event|
       @logger.debug "Getting info for event: #{event.metadata[:namespace]}/#{event.metadata[:name]}"
-      attrs = event.to_hash.slice(:lastTimestamp, :message, :reason)
+      attrs = event.to_hash.slice(:message, :reason)
+      attrs[:lastTimestamp] = Time.parse(event[:lastTimestamp]).to_i
       attrs[:uid] = event.metadata[:uid]
       attrs[:name] = event.metadata[:name]
       attrs[:kind] = event.metadata[:kind]

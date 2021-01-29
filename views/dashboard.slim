@@ -33,7 +33,7 @@ div class='row'
                       - %w[prod prodtest preprod perf cola].each do |env|
                         - if (namespace = Namespace.with(:name, "#{app}-#{env}"))
                           - light, text = light_for_namespace(namespace)
-                          a href="/namespace/#{namespace.id}"
+                          a href="/namespace/#{namespace.name}"
                             span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
                               = env.titleize
                         - else
@@ -44,7 +44,7 @@ div class='row'
                     td
                       - @orphans.each do |namespace|
                         - light, text = light_for_namespace(namespace)
-                        a href="/namespace/#{namespace.id}"
+                        a href="/namespace/#{namespace.name}"
                           span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
                             = namespace.name
   div class='col-2'

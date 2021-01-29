@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'application_helpers'
 require 'config'
 require 'display_helpers'
 require 'sassc'
@@ -14,16 +15,30 @@ require 'report'
 # Base class for all Controllers
 class ApplicationController < Sinatra::Base
   set :root, File.expand_path('..', __dir__)
-  enable :logging
-  enable :sessions
 
+  # register extends the Sinastra DSL
   register Config
   register Sinatra::Flash
   register Sinatra::RespondWith
   register Sinatra::Validation
 
+  # helpers extend the Request context
   helpers Sinatra::Param
+  helpers ApplicationHelpers
   helpers DisplayHelpers
+
+  # settings
+  enable :logging
+  enable :sessions
+  set :javascripts, [
+    'jquery.min.js',
+    'popper.min.js',
+    'bootstrap.min.js',
+    'mdb.min.js',
+    'bms.js'
+  ]
+  set :title, 'BMS'
+  set :heading, 'BMS'
 
   before '/*' do
     @latest_reports = Report.latest_timestamps

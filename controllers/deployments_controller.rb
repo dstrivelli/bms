@@ -8,7 +8,8 @@ require 'application_controller'
 class DeploymentsController < ApplicationController
   get '/:uid' do
     @deployment = Deployment.with(:uid, params[:uid])
-    @header = "Deployment: #{@deployment.name}"
+
+    heading "Deployment: #{@deployment.name}"
 
     # Display
     respond_to do |format|

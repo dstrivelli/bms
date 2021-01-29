@@ -114,8 +114,8 @@ class ReportsController < ApplicationController
 
     timestamp = latest.timestamp if timestamp == 'latest'
     if (@report = Report.find(timestamp: timestamp).first)
-      @header = 'BMS Health Report'
-      @caption = display_time(@report.timestamp)
+      heading 'BMS Health Report'
+      caption display_time(@report.timestamp)
       slim :tabbed_report
     else
       slim 'p No result found.'
@@ -124,6 +124,9 @@ class ReportsController < ApplicationController
 
   get '/list' do
     @reports = Report.all
+
+    heading 'BMS Health Report List'
+
     slim :reports
   end
 end

@@ -1,7 +1,7 @@
 doctype html
 html lang='en'
   head
-    title BIP Monitoring System
+    title = full_title
     meta charset='utf-8'
     meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'
     link rel='apple-touch-icon' size='180x180' href='/apple-touch-icon.png'
@@ -15,14 +15,8 @@ html lang='en'
     - if @stylesheets
       - @stylesheets.each do |stylesheet|
         link rel='stylesheet' href=stylesheet
-    script src='/js/jquery.min.js'
-    script src='/js/popper.min.js'
-    script src='/js/bootstrap.min.js'
-    script src='/js/mdb.min.js'
-    script src='/js/bms.js'
-    - if @scripts
-      - @scripts.each do |js|
-        script src=js
+    - javascripts.each do |js|
+      script src=js
   body
     == slim :_navbar
     div id='layout-main' class='container-fluid'
@@ -30,9 +24,8 @@ html lang='en'
         - flash.each do |type, msg|
           == slim :_alert, locals: { type: type, msg: msg }
       #header
-        h1 = @header ? @header : 'BIP Monitoring System'
-        - if @caption
-          .caption = @caption
+        h1 = heading
+        .caption = caption
         hr
       #content.container-fluid
         == yield

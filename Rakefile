@@ -39,9 +39,13 @@ desc 'Load authentication tokens for testing'
 task :setup, [:username, :password] do |_, args|
   require 'faraday'
   require 'yaml'
-  config = YAML.safe_load(File.read(File.expand_path('~/.kube/config')))
-  token = config['users'].first['user']['auth-provider']['config']['id-token']
-  File.open('local/k8_token', 'w') { |file| file.puts token }
+
+  ## This no longer works for me since I'm using the cert instead of token for
+  # k8 auth.
+  # config = YAML.safe_load(File.read(File.expand_path('~/.kube/config')))
+  # user = config['users'].first
+  # token = ['user']['auth-provider']['config']['id-token']
+  # File.open('local/k8_token', 'w') { |file| file.puts token }
 
   oauth_url = URI('https://oauth.prod8.bip.va.gov/')
   response = Faraday.get oauth_url.merge('/oauth2/start?rd=https://kibana.prod8.bip.va.gov/')

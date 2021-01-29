@@ -32,8 +32,8 @@ div class='container-fluid'
           th Reason
           th Message
       tbody
-        - @namespace.events.each do |event|
+        - @events.each do |event|
           tr
-            td = event.lastTimestamp
+            td = Time.at(event.lastTimestamp)
             td = event.reason
             td = event.message
