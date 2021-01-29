@@ -54,7 +54,7 @@ task :setup, [:username, :password] do |_, args|
   response = Faraday.get(dex_url)
   auth = { 'login' => args.username, 'password' => args.password }
   response = Faraday.post(dex_url.merge(response.headers['location']), auth)
-  raise 'Oauth2 Login Failed.' unless response.status == 303
+  raise "Oauth2 Login Failed. Status Code: #{response.status}" unless response.status == 303
 
   response = Faraday.get(dex_url.merge(response.headers['location']))
   response = Faraday.get(response.headers['location']) do |req|

@@ -15,7 +15,7 @@ RUN apk add --no-cache build-base libstdc++ ruby-dev zlib-dev
 COPY ./certs/* /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 LABEL va-certs="installed"
-    
+
 ENV APP_ENV production
 ENV RACK_ENV production
 # Per https://bundler.io/guides/bundler_docker_guide.html
