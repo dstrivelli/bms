@@ -363,38 +363,44 @@ begin
       }
 
       # Process "conditions"
-      elem[:status][:conditions].each do |condition|
-        condition = condition.to_h
-        case condition[:type]
-        when 'PodScheduled'
-          attrs[:scheduled] = condition[:status] == 'True'
-          attrs[:scheduled_at] = condition[:lastTransitionTime]
-          attrs[:scheduled_message] = condition.key?(:message) ? condition[:message] : ''
-        when 'Initialized'
-          attrs[:initialized] = condition[:status] == 'True'
-          attrs[:initialized_at] = condition[:lastTransitionTime]
-          attrs[:initialized_message] = condition.key?(:message) ? condition[:message] : ''
-        when 'Ready'
-          attrs[:ready] = condition[:status] == 'True'
-          attrs[:ready_at] = condition[:lastTransitionTime]
-          attrs[:ready_message] = condition.key?(:message) ? condition[:message] : ''
-        when 'ContainersReady'
-          attrs[:containers_ready] = condition[:status] == 'True'
-          attrs[:containers_ready_at] = condition[:lastTransitionTime]
-          attrs[:containers_ready_message] = condition.key?(:message) ? condition[:message] : ''
+      if elem[:status][:phase] != "Failed"
+        elem[:status][:conditions].each do |condition|
+          condition = condition.to_h
+          case condition[:type]
+          when 'PodScheduled'
+            attrs[:scheduled] = condition[:status] == 'True'
+            attrs[:scheduled_at] = condition[:lastTransitionTime]
+            attrs[:scheduled_message] = condition.key?(:message) ? condition[:message] : ''
+          when 'Initialized'
+            attrs[:initialized] = condition[:status] == 'True'
+            attrs[:initialized_at] = condition[:lastTransitionTime]
+            attrs[:initialized_message] = condition.key?(:message) ? condition[:message] : ''
+          when 'Ready'
+            attrs[:ready] = condition[:status] == 'True'
+            attrs[:ready_at] = condition[:lastTransitionTime]
+            attrs[:ready_message] = condition.key?(:message) ? condition[:message] : ''
+          when 'ContainersReady'
+            attrs[:containers_ready] = condition[:status] == 'True'
+            attrs[:containers_ready_at] = condition[:lastTransitionTime]
+            attrs[:containers_ready_message] = condition.key?(:message) ? condition[:message] : ''
+          end
         end
       end
 
       # Parse container_statuses
       attrs[:restarts] = 0
-      ready = 0
-      total = 0
-      elem[:status][:containerStatuses].each do |status|
-        attrs[:restarts] += status[:restartCount]
-        total += 1
-        ready += 1 if status.ready
+      if elem[:status][:phase] != "Failed"
+        ready = 0
+        total = 0
+        elem[:status][:containerStatuses].each do |status|
+          attrs[:restarts] += status[:restartCount]
+          total += 1
+          ready += 1 if status.ready
+        end
+        attrs[:ready_string] = "#{ready}/#{total}"
+      else
+        attrs[:ready_string] = "UNKNOWN"
       end
-      attrs[:ready_string] = "#{ready}/#{total}"
 
       if (pod = Pod.with(:uid, attrs[:uid]))
         pod.update(attrs)

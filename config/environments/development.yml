@@ -17,9 +17,12 @@ reports:
   purge_older_than: 900
 kubernetes:
   url: https://api.prod8.bip.va.gov:443
-  auth_options:
-    bearer_token: <%= File.read(File.expand_path('local/k8_token', __dir__)).chomp %>
+  auth_options: {}
   ssl_options:
+    client_cert: |-
+<%= File.readlines(File.expand_path('local/client_crt.pem', __dir__)).map { |line| "#{" "*6}#{line}" }.join %>
+    client_key: |-
+<%= File.readlines(File.expand_path('local/client_key.pem', __dir__)).map { |line| "#{" "*6}#{line}" }.join %>
     ca_file: <%= File.expand_path('local/ca.crt', __dir__) %>
 prometheus:
   <<: *url_defaults
