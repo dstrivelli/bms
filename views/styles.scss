@@ -40,3 +40,22 @@ body {
 button#email {
   float: right;
 }
+
+.dot {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &-green {
+    background-color: green;
+  }
+
+  &-yellow {
+    background-color: yellow;
+  }
+
+  &-red {
+    background-color: red;
+  }
+}

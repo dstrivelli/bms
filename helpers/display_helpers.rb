@@ -155,6 +155,91 @@ module DisplayHelpers
     [light, text]
   end
 
+  def v2light_for(obj)
+    binding.pry
+    # Setup result object
+    result = OpenStruct.new
+    result.light = :green
+    result.text = []
+
+    # Grab data from k8 object
+    #desired_replicas = deployment.spec.replicas
+    #replicas = deployment.status.replicas
+
+    case obj.Kind
+    when 'Deployment'
+      # Check availability
+      obj.status.conditions.each do |condition|
+        if condition.type == 'Available' and condition.status == 'False'
+          result.light = :red
+          result.text << condition.message
+        end
+      end
+    when 'Pod'
+      # Check conditions
+      obj.status.conditions.each do |condition|
+        if condition.type == 'Ready' and condition.status == 'False'
+          result.light = :red
+          result.text << condition.message
+        end
+      end
+    else
+      result.light = :error
+      result.text << "Error: Unable to generate a light for #{obj.kind}."
+    end
+
+    result.class_img, result.class_lightbg, result.class_darkbg = case result.light
+    when :green
+      ['fas fa-circle green-text', 'green-text', 'green']
+    when :yellow
+      ['fas fa-circle yellow-text', 'yellow-text', 'yellow']
+    when :red
+      ['fas fa-circle red-text', 'red-text', 'red white-text']
+    when :error
+      ['fas fa-exclaimation-circle red-text', 'red-text', 'red white-text']
+    else
+      ['', '']
+    end
+
+    result
+  end
+
+  def v2image(obj)
+    case obj.kind
+    when 'Deployment'
+      containers = obj.spec.template.spec.containers
+    when 'Pod'
+      containers = obj.spec.containers
+    end
+
+    primary = containers.first.image
+    containers.each do |container|
+      primary = container.image if /^container-registry/.match? container.image
+    end
+    primary.split('/').last
+  end
+
+  def v2image_and_tag(obj)
+    v2image(obj).split(':', 2)
+  end
+
+  def v2ready_string(obj)
+    case obj.kind
+    when 'Deployment'
+      desired = obj.spec.replicas
+      ready = obj.status.readyReplicas
+      ready = 0 if ready.nil?
+    when 'Pod'
+      desired = obj.containers.length
+      ready = 0
+      obj.status.containerStatuses.each do |status|
+        ready += 1 if status.ready = true
+      end
+    end
+
+    "#{ready}/#{desired}"
+  end
+
   def display_time(timestamp)
     Time.at(timestamp).strftime('%B %e, %Y %l:%M%P')
   end

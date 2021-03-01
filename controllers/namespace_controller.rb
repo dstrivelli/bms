@@ -6,6 +6,34 @@ require 'application_controller'
 
 # Controller to handle health reports
 class NamespaceController < ApplicationController
+  get '/v2/:name' do
+    param :name, String, required: true
+
+    v1 = KubeCtl.new(
+      Settings&.kubernetes&.url,
+      auth_options: Settings&.kubernetes&.auth_options&.to_h,
+      ssl_options: Settings&.kubernetes&.ssl_options&.to_h,
+    )
+    extensions = KubeCtl.new(
+      URI.join(Settings&.kubernetes&.url, '/apis/extensions'),
+      'v1beta1',
+      auth_options: Settings&.kubernetes&.auth_options&.to_h,
+      ssl_options: Settings&.kubernetes&.ssl_options&.to_h,
+    )
+
+    #binding.pry
+    @namespace = v1.get_namespace(params[:name])
+    @deployments = extensions.get_deployments(namespace: params[:name])
+    @pods = v1.get_pods(namespace: params[:name])
+    @events = v1.get_events(namespace: params[:name])
+
+    heading "Namespace: #{@namespace&.metadata&.name || 'Unknown'}"
+
+    respond_to do |format|
+      format.html { slim :v2namespace }
+    end
+  end
+
   get '/:id' do
     param :id, String, required: true
 

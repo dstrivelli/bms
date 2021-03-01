@@ -363,7 +363,7 @@ begin
       }
 
       # Process "conditions"
-      if elem[:status][:phase] != "Failed"
+      if elem[:status][:phase] != 'Failed'
         elem[:status][:conditions].each do |condition|
           condition = condition.to_h
           case condition[:type]
@@ -389,7 +389,7 @@ begin
 
       # Parse container_statuses
       attrs[:restarts] = 0
-      if elem[:status][:phase] != "Failed"
+      if elem[:status][:phase] != 'Failed'
         ready = 0
         total = 0
         elem[:status][:containerStatuses].each do |status|
@@ -399,7 +399,7 @@ begin
         end
         attrs[:ready_string] = "#{ready}/#{total}"
       else
-        attrs[:ready_string] = "UNKNOWN"
+        attrs[:ready_string] = 'UNKNOWN'
       end
 
       if (pod = Pod.with(:uid, attrs[:uid]))
