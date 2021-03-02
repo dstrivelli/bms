@@ -1,23 +1,13 @@
-div class='container-fluid'
-  div class='row'
-    div class='col'
-      table class='table'
-        thead class='black white-text'
-          tr
-            th Pod
-            th Images
-            th Ready
-            th Restarts
-            th Created At
-        tbody
-          - @deployment.pods.each do |pod|
-            tr
-              td = pod.name
-              td = pod.images
-              - ready, total = pod.ready_string.split('/')
-              - if ready == total
-                td class='text-center' = pod.ready_string
-              - else
-                td class='text-center red white-text' = pod.ready_string
-              td class='text-center' = pod.restarts
-              td = pod.created_at.rfc2822
+- if @deployment.nil?
+  h5 class='text-center' No deployment found.
+- else
+  == slim :_breadcrumbs, locals: { crumbs: @crumbs }
+  div class='row m-3'
+    div class='col-md-2'
+      == slim :_card_stats, locals: { title: 'Status', stats: @stats }
+    div class='col-md-8'
+      == slim :_card_metadata, locals: { obj: @deployment }
+      - unless @pods.empty?
+        section id='pods' class='mt-3'
+          h3 Pods
+          == slim :_lighttable_pods, locals: { pods: @pods }

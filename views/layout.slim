@@ -19,15 +19,15 @@ html lang='en'
       script src=js
   body
     == slim :_navbar
-    div id='layout-main' class='container-fluid'
-      #flashes
-        - flash.each do |type, msg|
-          == slim :_alert, locals: { type: type, msg: msg }
-      #header
-        h1 = heading
-        .caption = caption
-        hr
-      #content.container-fluid
-        == yield
-      #footer
-        hr
+    #content.container-fluid
+      .row
+        .col-md
+          #flashes
+            - flash.each do |type, msg|
+              == slim :_alert, locals: { type: type, msg: msg }
+          - unless heading.nil?
+            #header
+              h1 = heading
+              .caption = caption
+              hr
+          == yield

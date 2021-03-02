@@ -1,0 +1,34 @@
+- card_title ||= 'Metadata'
+div class='card'
+  div class='card-body'
+    h5 class='card-title' = card_title
+    table class='card-text table table-sm'
+      tr
+        td Name:
+        td = obj.metadata.name
+      tr
+        td Namespace:
+        td = obj.metadata.namespace
+      tr
+        td Labels:
+        td
+          - obj.metadata.labels.each_pair do |label, value|
+            span> class='badge bg-primary' = "#{label}: #{value}"
+      tr
+        td Annotations:
+        td
+          - obj.metadata.annotations_pair do |label, value|
+            span> class='badge bg-primary' = "#{label}: #{value}"
+      tr
+        td Creation Time:
+        td = Time.parse(obj.metadata.creationTimestamp)
+      - unless obj.spec&.selector&.matchLabels&.empty?
+        tr
+          td Selector:
+          td
+            - obj.spec.selector.matchLabels.each_pair do |label, value|
+              span> class='badge bg-info' = "#{label}: #{value}"
+      - unless obj.spec&.strategy&.type&.empty?
+        tr
+          td Update Strategy:
+          td = obj.spec.strategy.type

@@ -26,6 +26,7 @@ gem 'sinatra-param'         # Allows validation and transformation of params
 gem 'sinatra-validation'    # Allows validation of params
 gem 'slim'                  # Templating
 gem 'thin'                  # Use Thin for web handler
+gem 'typhoeus', '~> 1.4'
 
 group :development do
   gem 'lp'                  # Easy output of Objects in yaml

@@ -1,0 +1,12 @@
+- filter_empty ||= false
+- title ||= 'Stats'
+div class='card md-3'
+  div class='card-body'
+    h5 class='card-title text-center' = title
+    table class='card-text table table-sm'
+      tbody
+        - stats.each do |name, value|
+          - next if filter_empty and value.zero?
+          tr
+            td = "#{name.to_s}:"
+            td = value

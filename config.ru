@@ -62,6 +62,6 @@ map('/apps')        { run AppsController }
 map('/dashboard')   { run DashboardController }
 map('/deployments') { run DeploymentsController }
 map('/labels')      { run LabelsController }
-map('/namespace')   { run NamespaceController }
+map('/ns')          { run NamespaceController }
 map('/reports')     { run ReportsController }
 map('/')            { run ApplicationController }

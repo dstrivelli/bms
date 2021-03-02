@@ -1,5 +1,6 @@
 $font-stack: "Lucida Grande", Verdana, sans-serif;
 $primary-color: #444444;
+$header-size: 70px;
 
 body {
   //font-family: $font-stack;
@@ -7,8 +8,13 @@ body {
   //line-height: 1.25em;
   //color: #444444;
   background-color: #FAFAFA;
-  padding: 70px 20px 0;
-  margin: 0 auto;
+  //padding: 70px 20px 0;
+  padding-top: 70px;
+  position: relative;
+}
+
+.sticky-top {
+  top: 70px;
 }
 
 #header {
@@ -35,6 +41,21 @@ body {
 
 #footer {
   margin: 20px 0;
+}
+
+.has-nested-row {
+  td {
+    padding-bottom: 0 !important;
+  }
+}
+
+.nested-row {
+  td {
+    border-top-width: 0 !important;
+    padding-top: 10px !important;
+    padding-left: 22px !important;
+    padding-right: 22px !important;
+  }
 }
 
 button#email {

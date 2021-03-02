@@ -1,0 +1,37 @@
+- kind ||= :deployment
+table class='table'
+  thead class='black white-text'
+    tr
+      th style='width: 30px;' &nbsp;
+      th Name
+      th Image
+      th Tag
+      th Replicas
+  tbody
+    - list.each do |deployment|
+      - light = light_for(kind, deployment)
+      - image, tag = image_and_tag_for(kind, deployment)
+      - ready_string = ready_string_for(kind, deployment)
+      - if light.light == :red
+        tr class='has-nested-row'
+          td rowspan=2
+            i class=light.class_img title=light.text.join("\n")
+          td
+            a href=link_for(kind.downcase, @namespace.metadata.name, deployment.metadata.name)
+              = deployment.metadata.name
+          td = image
+          td = tag
+          td = ready_string
+        tr class='nested-row'
+          td colspan='4'
+            p class='note note-danger' = light.text.join("\n")
+      - else
+        tr
+          td
+            i class=light.class_img title=light.text.join("\n")
+          td
+            a href=link_for(kind, namespace, deployment.metadata.name)
+              = deployment.metadata.name
+          td = image
+          td = tag
+          td = ready_string

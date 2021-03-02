@@ -1,0 +1,39 @@
+table class='table'
+  thead class='black white-text'
+    tr
+      th style="width: 30px;" &nbsp;
+      th Name
+      th Ready
+      th Status
+      th Restarts
+      th Image
+      th Created
+  tbody
+    - pods.each do |pod|
+      - light = light_for('Pod', pod)
+      - ready_string = ready_string_for('Pod', pod)
+      - restarts = count_restarts(pod)
+      - image = image_for('Pod', pod)
+      - if light.light == :red
+        tr class='has-nested-row'
+          td rowspan=2
+            i class=light.class_img title="#{light.text.join("\n")}"
+          td = pod.metadata.name
+          td = ready_string
+          td = pod.status.phase
+          td = restarts
+          td = image
+          td = Time.parse(pod.status.startTime)
+        tr class='nested-row'
+          td colspan='6'
+            p class='note note-danger' = light.text.join("\n")
+      - else
+        tr
+          td
+            i class=light.class_img title="#{light.text.join("\n")}"
+          td = pod.metadata.name
+          td = ready_string
+          td = pod.status.phase
+          td = restarts
+          td = image
+          td = Time.parse(pod.status.startTime)

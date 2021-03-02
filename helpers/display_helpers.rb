@@ -155,39 +155,50 @@ module DisplayHelpers
     [light, text]
   end
 
-  def v2light_for(obj)
-    binding.pry
+  # rubocop:disable Metrics/PerceivedComplexity
+  def light_for(kind, obj)
     # Setup result object
     result = OpenStruct.new
     result.light = :green
     result.text = []
 
-    # Grab data from k8 object
-    #desired_replicas = deployment.spec.replicas
-    #replicas = deployment.status.replicas
-
-    case obj.Kind
-    when 'Deployment'
+    case kind.downcase.to_sym
+    when :daemonset
+      desired = obj.status.desiredNumberScheduled
+      current = obj.status.currentNumberScheduled
+      if desired != current
+        result.light = :red
+        result.text << "The desired replicas (#{desired}) does not match current replicas (#{current})."
+      end
+    when :deployment
       # Check availability
       obj.status.conditions.each do |condition|
-        if condition.type == 'Available' and condition.status == 'False'
+        if condition.type == 'Available' && condition.status == 'False'
           result.light = :red
           result.text << condition.message
         end
       end
-    when 'Pod'
+    when :pod
       # Check conditions
       obj.status.conditions.each do |condition|
-        if condition.type == 'Ready' and condition.status == 'False'
+        if condition.type == 'Ready' && condition.status == 'False'
           result.light = :red
           result.text << condition.message
         end
+      end
+    when :statefulset
+      desired = obj.spec.replicas
+      ready = obj.status.readyReplicas
+      if desired != ready
+        result.light = :red
+        result.text << "The desired replicas (#{desired}) does not match the ready replicas (#{ready})."
       end
     else
       result.light = :error
       result.text << "Error: Unable to generate a light for #{obj.kind}."
     end
 
+    # rubocop:disable Layout/CaseIndentation, Layout/EndAlignment
     result.class_img, result.class_lightbg, result.class_darkbg = case result.light
     when :green
       ['fas fa-circle green-text', 'green-text', 'green']
@@ -200,15 +211,17 @@ module DisplayHelpers
     else
       ['', '']
     end
+    # rubocop:enable Layout/CaseIndentation, Layout/EndAlignment
 
     result
   end
+  # rubocop:enable Metrics/PerceivedComplexity
 
-  def v2image(obj)
-    case obj.kind
-    when 'Deployment'
+  def image_for(kind, obj)
+    case kind.downcase.to_sym
+    when :daemonset, :deployment, :statefulset
       containers = obj.spec.template.spec.containers
-    when 'Pod'
+    when :pod
       containers = obj.spec.containers
     end
 
@@ -219,25 +232,52 @@ module DisplayHelpers
     primary.split('/').last
   end
 
-  def v2image_and_tag(obj)
-    v2image(obj).split(':', 2)
+  def image_and_tag_for(kind, obj)
+    image_for(kind, obj).split(':', 2)
   end
 
-  def v2ready_string(obj)
-    case obj.kind
-    when 'Deployment'
+  def ready_string_for(kind, obj)
+    case kind.downcase.to_sym
+    when :daemonset
+      desired = obj.status.desiredNumberScheduled
+      ready = obj.status.currentNumberScheduled
+    when :deployment
       desired = obj.spec.replicas
       ready = obj.status.readyReplicas
       ready = 0 if ready.nil?
-    when 'Pod'
-      desired = obj.containers.length
+    when :pod
+      desired = obj.spec.containers.length
       ready = 0
       obj.status.containerStatuses.each do |status|
-        ready += 1 if status.ready = true
+        ready += 1 if status.ready == true
       end
+    when :statefulset
+      desired = obj.spec.replicas
+      ready = obj.status.readyReplicas
     end
 
     "#{ready}/#{desired}"
+  end
+
+  def count_restarts(pod)
+    restarts = 0
+
+    pod.status.containerStatuses.each do |status|
+      restarts += status.restartCount
+    end
+
+    restarts
+  end
+
+  def link_for(kind, *opts)
+    case kind.to_sym
+    when :deployment
+      "/deployments/#{opts[0]}/#{opts[1]}"
+    when :namespace
+      "/ns/#{opts[0]}"
+    else
+      ''
+    end
   end
 
   def display_time(timestamp)
@@ -266,7 +306,7 @@ module DisplayHelpers
 
   def display_string(_name, value)
     # Filter IP addresses because the VA thinks they
-    # are a matter of a matter of national security.
+    # are a matter of national security.
     value.to_s.gsub(/ip-[0-9]{1,3}-[0-9]{1,3}/, 'ip-x-x')
   end
 

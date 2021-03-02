@@ -1,0 +1,11 @@
+nav aria-label='breadcrumb'
+  ol class='breadcrumb'
+    - crumbs.each_with_index do |(text, href), idx|
+      - if href.empty?
+        - if idx == crumbs.length - 1
+          li class='breadcrumb-item active' = text
+        - else
+          li class='breadcrumb-item' = text
+      - else
+        li class='breadcrumb-item'
+          a href=href = text
