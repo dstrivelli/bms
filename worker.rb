@@ -119,31 +119,6 @@ rescue SocketError, Errno::ECONNREFUSED
   Net::HTTPResponse.new('', 400, 'CONNECTION FAILED')
 end
 
-def refresh_labels(repo_name)
-  if (last_run = Ohm.redis.call('GET', "#{repo_name}-refreshed"))
-    elapsed = Time.now.to_i - last_run.to_i
-    if elapsed < (60 * 60 * 12)
-      @logger.debug "Skipping update of labels for #{repo_name}... (last ran #{elapsed} seconds ago)"
-      return
-    end
-  end
-  @logger.debug "Updating Nexus Repo (#{repo_name})"
-  repo = NexusRepo.new(repo_name)
-  repo.images.each do |image|
-    # Find the image or create one
-    docker_image = DockerImage.find(repo: repo_name, name: image).first || DockerImage.create(repo: repo_name, name: image)
-    # Iterate through the image tags
-    repo.tags(image: image).each do |tag|
-      # Find the tag or create one
-      unless DockerTag.find(image_id: docker_image.id, name: tag).first
-        labels = repo.labels(image: image, tag: tag)
-        DockerTag.create(image: docker_image, name: tag, labels: labels)
-      end
-    end
-  end
-  Ohm.redis.call 'SET', "#{repo_name}-refreshed", Time.now.to_i.to_s
-end
-
 @logger = Logging::Logger.new('Worker')
 
 # Configure logging
@@ -186,16 +161,16 @@ end
 
 kubectl, extensions, metrics, prom = setup_connections
 
-begin
-  pid_file = Settings&.worker&.pid_file || '/tmp/bms_worker.pid'
-  if File.exist? pid_file
-    puts 'Only one instance of worker can run at a time.'
-    puts 'If this in error, remove ' + pid_file
-    exit 1
-  else
-    File.open(pid_file, 'w') { |f| f.write Process.pid }
-  end
+pid_file = Settings&.worker&.pid_file || '/tmp/bms_worker.pid'
+if File.exist? pid_file
+  puts 'Only one instance of worker can run at a time.'
+  puts 'If this in error, remove ' + pid_file
+  exit 1
+else
+  File.open(pid_file, 'w') { |f| f.write Process.pid }
+end
 
+begin
   # Start loop
   loop do
     # Initialize logging
@@ -579,9 +554,6 @@ begin
       report.delete
     end
 
-    # Update docker labels
-    # Settings&.nexus&.repos&.keys&.each { |repo| refresh_labels(repo) }
-
     sleep_for = Settings&.worker&.sleep || 300
     @logger.info "Sleeping for #{sleep_for} seconds..."
     sleep(sleep_for.to_i)
@@ -592,7 +564,7 @@ rescue SignalException => e
   if e.signm == 'SIGHUP'
     @logger.info 'Reloading config and restarting worker...'
     load_settings(env)
-    kubectl, metrics, prom = setup_connections
+    kubectl, extensions, metrics, prom = setup_connections
     retry
   end
   raise
