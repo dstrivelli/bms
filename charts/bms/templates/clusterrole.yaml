@@ -6,12 +6,16 @@ metadata:
 rules:
   - apiGroups:
     - ""
+    - apps
     - extensions
     - metrics.k8s.io
     resources:
+      - cronjobs
+      - configmaps
+      - daemonsets
       - deployments
       - events
-      - ingress
+      - ingresses
       - jobs
       - namespaces
       - nodes
@@ -19,7 +23,9 @@ rules:
       - persistantvolumes
       - persistantvolumeclaims
       - replicasets
+      - secrets
       - services
+      - statefulsets
     verbs:
       - get
       - watch
