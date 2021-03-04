@@ -1,0 +1,9 @@
+- hide_title ||= false
+- section_id ||= 'pods'
+- title ||= 'Pods'
+section id=section_id
+  .card
+    .card-body
+      - unless hide_title
+        h5.card-title = title
+      == slim :_lighttable_pods, locals: { pods: pods }

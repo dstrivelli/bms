@@ -11,6 +11,7 @@ require 'sinatra/respond_with'
 require 'sinatra/validation'
 
 require 'report'
+require_relative '../connectors/kubectl'
 
 # Base class for all Controllers
 class ApplicationController < Sinatra::Base
@@ -38,7 +39,19 @@ class ApplicationController < Sinatra::Base
     'bms.js'
   ]
   set :title, 'BMS'
-  set :heading, 'BMS'
+
+  # Everyone loves some kubernetes...
+  begin
+    opts = {
+      url: Settings&.kubernetes&.url,
+      auth_options: Settings&.kubernetes&.auth_options&.to_h,
+      ssl_options: Settings&.kubernetes&.ssl_options&.to_h
+    }
+    set :k8core, KubeCtl.core(**opts)
+    set :k8apps, KubeCtl.apps(**opts)
+    set :k8extensions, KubeCtl.extensions(**opts)
+    set :k8metrics, KubeCtl.metrics(**opts)
+  end
 
   before '/*' do
     @latest_reports = Report.latest_timestamps
@@ -61,7 +74,7 @@ class ApplicationController < Sinatra::Base
   end
 
   get '/health' do
-    return "{ status: 'green' }"
+    return '{ "status": "green" }'
     # health = { status: 'green' }
     # # Check database status
     # health[:latest_report] = Report.latest.first.timestamp
@@ -81,6 +94,6 @@ class ApplicationController < Sinatra::Base
   end
 
   not_found do
-    "I don't know what you want. Go back I guess."
+    "I don't know what you want."
   end
 end

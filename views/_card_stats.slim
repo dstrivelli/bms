@@ -6,7 +6,20 @@ div class='card md-3'
     table class='card-text table table-sm'
       tbody
         - stats.each do |name, value|
+          - name = name.to_s
           - next if filter_empty and value.zero?
-          tr
-            td = "#{name.to_s}:"
-            td = value
+          - if name.to_s.end_with? '_percent'
+            - name.delete_suffix!('_percent')
+            - value = parse_percentage(value)
+            tr
+              td colspan='2'
+                .container
+                  .row
+                    .text-center.w-100 = "#{name}: #{value[:text]}"
+                  .row
+                    .progress.md-progress.w-100
+                      div class="progress-bar progress-bar-striped #{value[:bg]}" role='progressbar' style="width: #{value[:text]}" aria-valuenow=value[:value] aria-valuemin=0 aria-valuemax='100'
+          - else
+            tr
+              td = "#{name.to_s}:"
+              td = display_value(name.to_s, value)

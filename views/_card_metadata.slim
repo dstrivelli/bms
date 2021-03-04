@@ -1,34 +1,37 @@
+- if obj&.kind
+  - card_title ||= "#{obj.kind}: #{obj.metadata.name}"
 - card_title ||= 'Metadata'
 div class='card'
   div class='card-body'
-    h5 class='card-title' = card_title
+    h5 class='card-title' = display(card_title)
     table class='card-text table table-sm'
       tr
         td Name:
-        td = obj.metadata.name
-      tr
-        td Namespace:
-        td = obj.metadata.namespace
+        td = display_value('name', obj.metadata.name)
+      - if obj.metadata&.namespace
+        tr
+          td Namespace:
+          td = obj.metadata.namespace
       tr
         td Labels:
         td
           - obj.metadata.labels.each_pair do |label, value|
-            span> class='badge bg-primary' = "#{label}: #{value}"
+            span> class='badge bg-primary' = "#{label}: #{display_value(label, value)}"
       tr
         td Annotations:
         td
           - obj.metadata.annotations_pair do |label, value|
-            span> class='badge bg-primary' = "#{label}: #{value}"
+            span> class='badge bg-primary' = "#{label}: #{display_value(label, value)}"
       tr
-        td Creation Time:
+        td.text-nowrap Creation Time:
         td = Time.parse(obj.metadata.creationTimestamp)
-      - unless obj.spec&.selector&.matchLabels&.empty?
+      - if obj.spec&.selector&.matchLabels
         tr
           td Selector:
           td
             - obj.spec.selector.matchLabels.each_pair do |label, value|
-              span> class='badge bg-info' = "#{label}: #{value}"
-      - unless obj.spec&.strategy&.type&.empty?
+              span> class='badge bg-info' = "#{label}: #{display_value(label, value)}"
+      - if obj.spec&.strategy&.type
         tr
           td Update Strategy:
           td = obj.spec.strategy.type

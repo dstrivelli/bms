@@ -1,9 +1,9 @@
 == slim :_breadcrumbs, locals: { crumbs: @crumbs }
-div class='row m-3'
-  div class='col-md-2'
+.row.m-3
+  .col-md-2
     == slim :_card_stats, locals: { title: 'Status', stats: @stats }
-  div class='col-md-8'
-    == slim :_card_metadata, locals: { obj: @deployment }
-    - unless @pods.empty?
+  .col-md-10
+    == slim :_card_metadata, locals: { obj: @node }
+    - unless @pods.nil?
       hr
       == slim :_card_pods, locals: { pods: @pods }

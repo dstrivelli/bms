@@ -27,7 +27,7 @@ html lang='en'
               == slim :_alert, locals: { type: type, msg: msg }
           - unless heading.nil?
             #header
-              h1 = heading
+              h1 = display_value('heading', heading)
               .caption = caption
               hr
           == yield

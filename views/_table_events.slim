@@ -1,0 +1,17 @@
+table class='table'
+  thead class='black white-text'
+    tr
+      th Timestamp
+      th Object
+      th Reason
+      th Message
+  tbody
+    - events.each do |event|
+      tr
+        td = Time.parse(event.lastTimestamp)
+        - if event.involvedObject.nil?
+          td = "&nbsp;"
+        - else
+          td = "#{event.involvedObject.kind}/#{event.involvedObject.name}"
+        td = event.reason
+        td = event.message

@@ -1,6 +1,10 @@
 nav aria-label='breadcrumb'
   ol class='breadcrumb'
+    li.breadcrumb-item
+      a href='/'
+        i.fas.fa-home>
     - crumbs.each_with_index do |(text, href), idx|
+      - text = display_value('', text)
       - if href.empty?
         - if idx == crumbs.length - 1
           li class='breadcrumb-item active' = text

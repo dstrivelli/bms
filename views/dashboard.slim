@@ -10,7 +10,9 @@ div class='row'
         - @nodes.each do |node|
           - light, text = light_for_node(node)
           tr
-            td = display_value('hostname', node.hostname)
+            td
+              a href=link_for(:node, display_value('hostname', node.hostname))
+                = display_value('hostname', node.hostname)
             td
               span> class="badge badge-#{bootstrap_color_for(light)}"
                 = node.conditions.join("\n")

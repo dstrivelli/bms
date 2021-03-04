@@ -179,11 +179,14 @@ module DisplayHelpers
         end
       end
     when :pod
-      # Check conditions
-      obj.status.conditions.each do |condition|
-        if condition.type == 'Ready' && condition.status == 'False'
-          result.light = :red
-          result.text << condition.message
+      # Check if Successful first.
+      if obj.status.phase != 'Succeeded'
+        # Check conditions
+        obj.status.conditions.each do |condition|
+          if condition.type == 'Ready' && condition.status == 'False'
+            result.light = :red
+            result.text << condition.message
+          end
         end
       end
     when :statefulset
@@ -270,14 +273,20 @@ module DisplayHelpers
   end
 
   def link_for(kind, *opts)
-    case kind.to_sym
+    case kind.to_s.downcase.to_sym
     when :deployment
       "/deployments/#{opts[0]}/#{opts[1]}"
     when :namespace
       "/ns/#{opts[0]}"
+    when :node
+      "/nodes/#{opts[0]}"
     else
       ''
     end
+  end
+
+  def display(value)
+    display_value('', value)
   end
 
   def display_time(timestamp)

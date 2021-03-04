@@ -31,7 +31,7 @@ describe ApplicationController do
     end
 
     it 'says something funny' do
-      expect(response.body).to include('Go back I guess')
+      expect(response.body).to include("I don't know what you want.")
     end
   end
 end

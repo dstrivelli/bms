@@ -1,96 +1,69 @@
-- if @namespace.nil?
-  h5 class='text-center' No namespace found with that ID.
-- else
-  == slim :_breadcrumbs, locals: { crumbs: @crumbs }
-  div class='row'
-    div class='col-md-2'
-      div id='scrollspy' class='sticky-top'
-        ul class='nav flex-column nav-pills menu-sidebar'
-          - unless @configmaps.empty?
-            li class='nav-item'
-              a class='nav-link' href='#'
-                'ConfigMaps
-                span class='badge bg-primary' = @configmaps.length
-          - unless @secrets.empty?
-            li class='nav-item'
-              a class='nav-link' href='#'
-                'Secrets
-                span class='badge bg-primary' = @secrets.length
-          - unless @ingresses.empty?
-            li class='nav-item'
-              a class='nav-link' href='#'
-                'Ingresses
-                span class='badge bg-primary' = @ingresses.length
-          - unless @services.empty?
-            li class='nav-item'
-              a class='nav-link' href='#'
-                'Services
-                span class='badge bg-primary' = @services.length
-          - unless @daemonsets.empty?
-            li class='nav-item'
-              a class='nav-link' href='#daemonsets'
-                'DaemonSets
-                span class='badge bg-primary' = @daemonsets.length
-          - unless @statefulsets.empty?
-            li class='nav-item'
-              a class='nav-link' href='#statefulsets'
-                'StatefulSets
-                span class='badge bg-primary' = @statefulsets.length
-          - unless @deployments.empty?
-            li class='nav-item'
-              a class='nav-link' href='#deployments'
-                'Deployments
-                span class='badge bg-primary' = @deployments.length
-          - unless @pods.empty?
-            li class='nav-item'
-              a class='nav-link' href='#pods'
-                'Pods
-                span class='badge bg-primary' = @pods.length
-          - unless @events.empty?
-            li class='nav-item'
-              a class='nav-link' href='#events'
-                'Events
-                span class='badge bg-primary' = @events.length
-    div class='col-md-8'
-      - unless @daemonsets.empty?
-        section id='daemonsets'
-          h3 DaemonSets
-          == slim :_lighttable_deployments, locals: { kind: :daemonset, namespace: @namespace.metadata.name, list: @daemonsets }
-      - unless @statefulsets.empty?
-        section id='statefulsets'
-          h3 StatefulSets
-          == slim :_lighttable_deployments, locals: { kind: :statefulset, namespace: @namespace.metadata.name, list: @statefulsets }
-      - unless @deployments.empty?
-        section id='deployments'
-          h3 Deployments
-          div class='row'
-            div class='col'
-              == slim :_lighttable_deployments, locals: { namespace: @namespace.metadata.name, list: @deployments }
-      - unless @pods.nil? or @pods.length == 0
-        section id='pods'
-          h3 Pods
-          == slim :_lighttable_pods, locals: { pods: @pods }
-      - unless @events.nil? or @events.length == 0
-        section id='events'
-          h3 Events
-          table class='table'
-            thead class='black white-text'
-              tr
-                th Timestamp
-                th Object
-                th Reason
-                th Message
-            tbody
-              - @events.each do |event|
-                tr
-                  td = Time.parse(event.lastTimestamp)
-                  - if event.involvedObject.nil?
-                    td = "&nbsp;"
-                  - else
-                    td = "#{event.involvedObject.kind}/#{event.involvedObject.name}"
-                  td = event.reason
-                  td = event.message
-    div class='col-md-2'
+== slim :_breadcrumbs, locals: { crumbs: @crumbs }
+div class='row'
+  div class='col-md-2'
+    div id='scrollspy' class='sticky-top'
+      ul class='nav flex-column nav-pills menu-sidebar'
+        - unless @configmaps.empty?
+          li class='nav-item'
+            a class='nav-link' href='#'
+              'ConfigMaps
+              span class='badge bg-primary' = @configmaps.length
+        - unless @secrets.empty?
+          li class='nav-item'
+            a class='nav-link' href='#'
+              'Secrets
+              span class='badge bg-primary' = @secrets.length
+        - unless @ingresses.empty?
+          li class='nav-item'
+            a class='nav-link' href='#'
+              'Ingresses
+              span class='badge bg-primary' = @ingresses.length
+        - unless @services.empty?
+          li class='nav-item'
+            a class='nav-link' href='#'
+              'Services
+              span class='badge bg-primary' = @services.length
+        - unless @daemonsets.empty?
+          li class='nav-item'
+            a class='nav-link' href='#daemonsets'
+              'DaemonSets
+              span class='badge bg-primary' = @daemonsets.length
+        - unless @statefulsets.empty?
+          li class='nav-item'
+            a class='nav-link' href='#statefulsets'
+              'StatefulSets
+              span class='badge bg-primary' = @statefulsets.length
+        - unless @deployments.empty?
+          li class='nav-item'
+            a class='nav-link' href='#deployments'
+              'Deployments
+              span class='badge bg-primary' = @deployments.length
+        - unless @pods.empty?
+          li class='nav-item'
+            a class='nav-link' href='#pods'
+              'Pods
+              span class='badge bg-primary' = @pods.length
+        - unless @events.empty?
+          li class='nav-item'
+            a class='nav-link' href='#events'
+              'Events
+              span class='badge bg-primary' = @events.length
+  div class='col-md-10'
+    - unless @daemonsets.empty?
+      == slim :_card_deployments, locals: { kind: :daemonset, namespace: @namespace.metadata.name, list: @daemonsets, title: 'DaemonSets', section_id: 'daemonsets' }
+      hr
+    - unless @statefulsets.empty?
+      == slim :_card_deployments, locals: { kind: :statefulset, namespace: @namespace.metadata.name, list: @statefulsets, title: 'StatefulSets', section_id: 'statefulsets' }
+      hr
+    - unless @deployments.empty?
+      == slim :_card_deployments, locals: { namespace: @namespace.metadata.name, list: @deployments, title: 'Deployments', section_id: 'deployments' }
+      hr
+    - unless @pods.nil? or @pods.length == 0
+      == slim :_card_pods, locals: { pods: @pods }
+      hr
+    - unless @events.nil? or @events.length == 0
+      == slim :_card_events, locals: { events: @events }
+      hr
 javascript:
   $(document).ready(function(){
     $('body').scrollspy({

@@ -62,6 +62,7 @@ map('/apps')        { run AppsController }
 map('/dashboard')   { run DashboardController }
 map('/deployments') { run DeploymentsController }
 map('/labels')      { run LabelsController }
+map('/nodes')       { run NodesController }
 map('/ns')          { run NamespaceController }
 map('/reports')     { run ReportsController }
 map('/')            { run ApplicationController }

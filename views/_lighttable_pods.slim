@@ -14,7 +14,7 @@ table class='table'
       - ready_string = ready_string_for('Pod', pod)
       - restarts = count_restarts(pod)
       - image = image_for('Pod', pod)
-      - if light.light == :red
+      - if light.light == :red && !light.text.empty?
         tr class='has-nested-row'
           td rowspan=2
             i class=light.class_img title="#{light.text.join("\n")}"

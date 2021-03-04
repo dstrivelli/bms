@@ -38,6 +38,9 @@ uris:
         health: 'fail'
 kubernetes:
   url: https://kubernetes.default.svc
+  auth_options:
+    bearer_token: 'ImaBearRAwR'
+  ssl_options: {}
 nexus:
   repos:
     prod: 'https://container-registry.prod8.bip.va.gov/'

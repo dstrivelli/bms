@@ -5,6 +5,54 @@ require 'timeout'
 
 # Module to house helpers to the general application
 module ApplicationHelpers
+  # CONSTANTS
+  CPU_ORDERS_OF_MAGNITUDE = {
+    m: 1000,
+    n: 1000**3
+  }.freeze
+
+  RAM_ORDERS_OF_MAGNITUDE = {
+    Ki: 1024,
+    Mi: 1024**2,
+    Gi: 1024**3,
+    Ti: 1024**4,
+    Pi: 1024**5,
+    Ei: 1024**6,
+    K: 1000,
+    M: 1000**2,
+    G: 1000**3,
+    T: 1000**4,
+    P: 1000**5,
+    E: 1000**6
+  }.freeze
+
+  def convert_mcores(mcores, precision: 2)
+    return 0.0 if mcores.nil?
+
+    unit = mcores[-1].to_sym
+    count = mcores[0..-2].to_f
+    result = if CPU_ORDERS_OF_MAGNITUDE[unit]
+               count / CPU_ORDERS_OF_MAGNITUDE[unit]
+             else
+               count
+             end
+    result.round(precision)
+  end
+
+  def convert_ram(ram)
+    return 0 if ram.nil?
+
+    ram_regex = /(?<count>[0-9]*)(?<unit>(#{RAM_ORDERS_OF_MAGNITUDE.keys.join('|')}))?$/
+    matches = ram_regex.match(ram)
+    raise "Error in #convert_ram. The value #{ram} does not match the regex." if matches.nil?
+
+    if matches[:unit].nil?
+      matches[:count].to_i
+    else
+      matches[:count].to_i * RAM_ORDERS_OF_MAGNITUDE[matches[:unit].to_sym]
+    end
+  end
+
   def full_title
     title = (settings.respond_to(:title) ? settings.title : 'BMS')
     if @title
@@ -51,8 +99,6 @@ module ApplicationHelpers
       @heading
     elsif settings.respond_to?(:heading)
       settings.heading
-    else
-      'BMS'
     end
   end
 
