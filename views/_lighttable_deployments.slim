@@ -7,6 +7,7 @@ table class='table'
       th Image
       th Tag
       th Replicas
+      th Created
   tbody
     - list.each do |deployment|
       - light = light_for(kind, deployment)
@@ -22,8 +23,9 @@ table class='table'
           td = image
           td = tag
           td = ready_string
+          td = display_time(deployment.metadata.creationTimestamp)
         tr class='nested-row'
-          td colspan='4'
+          td colspan='5'
             p class='note note-danger' = light.text.join("\n")
       - else
         tr
@@ -35,3 +37,4 @@ table class='table'
           td = image
           td = tag
           td = ready_string
+          td = display_time(deployment.metadata.creationTimestamp)

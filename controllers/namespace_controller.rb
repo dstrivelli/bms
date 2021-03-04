@@ -15,14 +15,14 @@ class NamespaceController < ApplicationController
     @namespace = settings.k8core.get_namespace(ns)
     unless @namespace.nil?
       @configmaps = settings.k8core.get_config_maps(namespace: ns)
-      @daemonsets = settings.k8extensions.get_daemon_sets(namespace: ns, sort_by: '.metadata.name')
+      @daemonsets = settings.k8extensions.get_daemon_sets(namespace: ns)
       @deployments = settings.k8extensions.get_deployments(namespace: ns)
       @ingresses = settings.k8extensions.get_ingresses(namespace: ns)
       @secrets = settings.k8core.get_secrets(namespace: ns)
       @services = settings.k8core.get_services(namespace: ns)
-      @statefulsets = settings.k8apps.get_stateful_sets(namespace: ns, sort_by: '.metadata.name')
-      @pods = settings.k8core.get_pods(namespace: ns, sort_by: '.metadata.name')
-      @events = settings.k8core.get_events(namespace: ns, sort_by: '.lastTimestamp')
+      @statefulsets = settings.k8apps.get_stateful_sets(namespace: ns)
+      @pods = settings.k8core.get_pods(namespace: ns)
+      @events = sort_events(settings.k8core.get_events(namespace: ns))
     end
 
     @crumbs = {

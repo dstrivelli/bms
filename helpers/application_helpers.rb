@@ -112,6 +112,12 @@ module ApplicationHelpers
                })
   end
 
+  def sort_events(events)
+    return events if events.empty?
+
+    events.to_a.sort_by(&:lastTimestamp)
+  end
+
   def full_title
     title = (settings.respond_to(:title) ? settings.title : 'BMS')
     if @title
