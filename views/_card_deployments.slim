@@ -2,7 +2,8 @@
 - kind ||= :deployment
 - section_id ||= 'pods'
 - title ||= 'Pods'
-section id=section_id
+section id="#{section_id}_real" style='position: relative'
+  span id=section_id class='offset-anchor'
   .card
     .card-body
       - unless hide_title

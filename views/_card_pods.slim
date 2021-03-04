@@ -1,7 +1,8 @@
 - hide_title ||= false
 - section_id ||= 'pods'
 - title ||= 'Pods'
-section id=section_id
+section id="#{section_id}_real"
+  span id=section_id class='offset-anchor'
   .card
     .card-body
       - unless hide_title

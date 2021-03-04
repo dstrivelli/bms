@@ -1,10 +1,16 @@
-$('#scrollspy ul li a[href^="#"').on('click', function(e) {
-  e.preventDefault();
-  var hash this.hash;
-  $('html, body').animate({
-    scrollTop: $(this.hash).offset().top
-  }, 1000, function(){
-    window.location.hash = hash;
+$(document).ready(function() {
+  $('#scrollspy ul li a[href^="#"]').on('click', function(e) {
+    e.preventDefault();
+    var hash = e.target.hash;
+    var offset = 0;
+    if (hash != '') {
+      var offset = $(hash).offset().top
+    }
+    $('html, body').animate({
+      scrollTop: offset
+    }, 750, function(){
+      window.location.hash = hash;
+    });
   });
 });
 
