@@ -21,7 +21,7 @@ nav class='navbar navbar-expand-lg fixed-top navbar-dark bg-dark'
             div class='dropdown-divider'
             h6 class='dropdown-header' Recent Reports
             - @latest_reports.each do |timestamp|
-              a class='dropdown-item' href="/reports/#{timestamp}" = display_time(timestamp)
+              a class='dropdown-item' href="/reports/#{timestamp}" = display_timestamp(timestamp)
       li class='nav-item dropdown'
         a class='nav-link dropdown-toggle' href='#' id='navbarTools' role='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' Tools
         div class='dropdown-menu' aria-labelledby='navbarTools'

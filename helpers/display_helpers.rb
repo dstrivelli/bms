@@ -6,6 +6,8 @@ module DisplayHelpers
   require 'active_support/core_ext/numeric/conversions'
   require 'active_support/core_ext/string/inflections'
 
+  require 'application_helpers'
+
   # Setup acronyms used in reports.
   ActiveSupport::Inflector.inflections(:en) do |inflect|
     inflect.acronym 'BMS'
@@ -289,7 +291,13 @@ module DisplayHelpers
     display_value('', value)
   end
 
-  def display_time(timestamp)
+  def display_time(time)
+    time = Time.parse(time) if time.is_a? String
+    time = time.localtime if time.utc?
+    time.strftime('%B %e, %Y %l:%M:%P')
+  end
+
+  def display_timestamp(timestamp)
     Time.at(timestamp).strftime('%B %e, %Y %l:%M%P')
   end
 

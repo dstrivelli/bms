@@ -1,3 +1,4 @@
+- resources_total = nil # We have to define this outside the loop.
 table class='table'
   thead class='black white-text'
     tr
@@ -7,6 +8,8 @@ table class='table'
       th Status
       th Restarts
       th Image
+      th.text-center CPU
+      th.text-center RAM
       th Created
   tbody
     - pods.each do |pod|
@@ -14,6 +17,9 @@ table class='table'
       - ready_string = ready_string_for('Pod', pod)
       - restarts = count_restarts(pod)
       - image = image_for('Pod', pod)
+      - ready_string = ready_string_for('Pod', pod)
+      - resources = sum_resources(pod)
+      - resources_total = add_resources(resources_total, resources)
       - if light.light == :red && !light.text.empty?
         tr class='has-nested-row'
           td rowspan=2
@@ -23,9 +29,11 @@ table class='table'
           td = pod.status.phase
           td = restarts
           td = image
-          td = Time.parse(pod.status.startTime)
+          td.text-center = "#{resources[:cpu_requested_str]} :: #{resources[:cpu_limits_str]}"
+          td.text-center = "#{resources[:ram_requested_str]} :: #{resources[:ram_limits_str]}"
+          td.text-nowrap = display_time(pod.status.startTime)
         tr class='nested-row'
-          td colspan='6'
+          td colspan='8'
             p class='note note-danger' = light.text.join("\n")
       - else
         tr
@@ -36,4 +44,18 @@ table class='table'
           td = pod.status.phase
           td = restarts
           td = image
-          td = Time.parse(pod.status.startTime)
+          td.text-center = "#{resources[:cpu_requested_str]} :: #{resources[:cpu_limits_str]}"
+          td.text-center = "#{resources[:ram_requested_str]} :: #{resources[:ram_limits_str]}"
+          td.text-nowrap = display_time(pod.status.startTime)
+  - if pods.length > 1
+    tfoot
+      tr
+        td
+        td
+        td
+        td
+        td
+        td
+        td.text-center = "#{resources_total[:cpu_requested_str]} :: #{resources_total[:cpu_limits_str]}"
+        td.text-center = "#{resources_total[:ram_requested_str]} :: #{resources_total[:ram_limits_str]}"
+        td

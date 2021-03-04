@@ -27,7 +27,7 @@ module ApplicationHelpers
   }.freeze
 
   def convert_mcores(mcores, precision: 2)
-    return 0.0 if mcores.nil?
+    return 0 if mcores.nil?
 
     unit = mcores[-1].to_sym
     count = mcores[0..-2].to_f
@@ -37,6 +37,12 @@ module ApplicationHelpers
                count
              end
     result.round(precision)
+  end
+
+  def convert_to_mcores(float)
+    return '0m' if float.zero?
+
+    "#{(float * CPU_ORDERS_OF_MAGNITUDE[:m]).floor}m"
   end
 
   def convert_ram(ram)
@@ -51,6 +57,59 @@ module ApplicationHelpers
     else
       matches[:count].to_i * RAM_ORDERS_OF_MAGNITUDE[matches[:unit].to_sym]
     end
+  end
+
+  def convert_to_ram(int)
+    return '0Ki' if int.zero?
+
+    oom = {
+      Ei: 1024**6,
+      Pi: 1024**5,
+      Ti: 1024**4,
+      Gi: 1024**3,
+      Mi: 1024**2,
+      Ki: 1024
+    }
+
+    oom.each_key do |key|
+      # if larger than this key, convert and add key
+      return "#{(int / oom[key]).round(2)}#{key}" if int > oom[key]
+    end
+  end
+
+  def sum_resources(pod)
+    rtn = {
+      cpu_requested: 0.0,
+      cpu_limits: 0.0,
+      ram_requested: 0.0,
+      ram_limits: 0.0
+    }
+    pod.spec.containers.each do |container|
+      rtn[:cpu_requested] += convert_mcores(container&.resources&.requests&.cpu)
+      rtn[:cpu_limits] += convert_mcores(container&.resources&.limits&.cpu)
+      rtn[:ram_requested] += convert_ram(container&.resources&.requests&.memory)
+      rtn[:ram_limits] += convert_ram(container&.resources&.limits&.memory)
+    end
+    rtn.merge({
+                cpu_requested_str: convert_to_mcores(rtn[:cpu_requested]),
+                cpu_limits_str: convert_to_mcores(rtn[:cpu_limits]),
+                ram_requested_str: convert_to_ram(rtn[:ram_requested]),
+                ram_limits_str: convert_to_ram(rtn[:ram_limits])
+              })
+  end
+
+  # Add two resource bundles together.
+  def add_resources(seta, setb)
+    seta ||= { cpu_requested: 0.0, cpu_limits: 0.0, ram_requested: 0.0, ram_limits: 0.0 }
+    %i[cpu_requested cpu_limits ram_requested ram_limits].each do |key|
+      seta[key] += (setb[key] || 0.0)
+    end
+    seta.merge({
+                 cpu_requested_str: convert_to_mcores(seta[:cpu_requested]),
+                 cpu_limits_str: convert_to_mcores(seta[:cpu_limits]),
+                 ram_requested_str: convert_to_ram(seta[:ram_requested]),
+                 ram_limits_str: convert_to_ram(seta[:ram_limits])
+               })
   end
 
   def full_title

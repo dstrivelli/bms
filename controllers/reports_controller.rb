@@ -65,7 +65,7 @@ class ReportsController < ApplicationController
       return slim :_alert, locals: { type: :error, msg: 'Email failed. Invalid report id.' }, layout: nil
     end
 
-    subject = "[BMS] Snapshot Report - #{display_time(@report.timestamp)}"
+    subject = "[BMS] Snapshot Report - #{display_timestamp(@report.timestamp)}"
 
     # Process html body
     html = Roadie::Document.new(slim(:report, layout: :layout_email))
@@ -115,7 +115,7 @@ class ReportsController < ApplicationController
     timestamp = latest.timestamp if timestamp == 'latest'
     if (@report = Report.find(timestamp: timestamp).first)
       heading 'BMS Health Report'
-      caption display_time(@report.timestamp)
+      caption display_timestamp(@report.timestamp)
       slim :tabbed_report
     else
       slim 'p No result found.'

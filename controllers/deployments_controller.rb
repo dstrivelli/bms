@@ -21,7 +21,7 @@ class DeploymentsController < ApplicationController
 
     @stats = {
       DesiredReplicas: @deployment.spec.replicas,
-      ReadyReplicas: @deployment.status.readyReplicas
+      ReadyReplicas: (@deployment.status.readyReplicas || 0)
     }
 
     begin
