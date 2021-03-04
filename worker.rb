@@ -139,19 +139,19 @@ end
 
 def setup_connections
   kubectl = KubeCtl.new(
-    Settings&.kubernetes&.url,
+    url: Settings&.kubernetes&.url,
     auth_options: Settings&.kubernetes&.auth_options&.to_h,
     ssl_options: Settings&.kubernetes&.ssl_options&.to_h
   )
   extensions = KubeCtl.new(
-    URI.join(Settings&.kubernetes&.url, '/apis/extensions'),
-    'v1beta1',
+    url: URI.join(Settings&.kubernetes&.url, '/apis/extensions'),
+    version: 'v1beta1',
     auth_options: Settings&.kubernetes&.auth_options&.to_h,
     ssl_options: Settings&.kubernetes&.ssl_options&.to_h
   )
   metrics = KubeCtl.new(
-    URI.join(Settings&.kubernetes&.url, '/apis/metrics.k8s.io'),
-    'v1beta1',
+    url: URI.join(Settings&.kubernetes&.url, '/apis/metrics.k8s.io'),
+    version: 'v1beta1',
     auth_options: Settings&.kubernetes&.auth_options&.to_h,
     ssl_options: Settings&.kubernetes&.ssl_options&.to_h
   )
