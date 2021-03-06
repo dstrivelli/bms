@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
-
 require 'application_controller'
 
 # Controller to handle displaying apps
@@ -44,7 +42,7 @@ class DeploymentsController < ApplicationController
     }
 
     if @deployment.nil?
-      'Deployment not found.'
+      slim :entitynotfound, locals: { kind: 'Deployment' }
     else
       slim :deployment
     end

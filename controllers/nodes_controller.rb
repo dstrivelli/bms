@@ -35,7 +35,11 @@ class NodesController < ApplicationController
         RAM_percent: convert_mcores(@node.status.allocatable.memory) / convert_mcores(@metrics.usage.memory)
       }
 
-      slim :node
+      if @node.nil?
+        slim :entitynotfound, locals: { kind: 'Node' }
+      else
+        slim :node
+      end
     end
   end
 end

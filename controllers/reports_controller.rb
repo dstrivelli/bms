@@ -125,7 +125,7 @@ class ReportsController < ApplicationController
   get '/list' do
     @reports = Report.all
 
-    heading 'BMS Health Report List'
+    heading 'BMS Health Reports'
 
     slim :reports
   end

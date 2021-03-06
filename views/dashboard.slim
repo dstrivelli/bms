@@ -50,16 +50,20 @@ div class='row'
                           span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
                             = namespace.name
   div class='col-2'
-    h2 class='text-center' URI Checks
+    h2 class='text-center' URL Checks
     table class='table'
       thead
         tr
           th Name
           th Result
       tbody
-        - @healthchecks.each do |check|
+        - @urlchecks.each do |check|
           tr
-            td = check.name
+            td = check[:name]
             td
-              span> class="badge badge-#{bootstrap_color_for(check.health)}"
-                = check.result
+              - if check[:result][:error].nil?
+                span> class="badge badge-#{bootstrap_color_for(check[:result][:light])}"
+                  = check[:result][:status]
+              - else
+                span> class="badge badge-danger" title=check[:result][:error]
+                  'ERROR

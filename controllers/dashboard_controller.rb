@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+require 'faraday'
 require 'json'
-require 'mail'
 
 require 'application_controller'
 
@@ -13,6 +13,13 @@ class DashboardController < ApplicationController
     @healthchecks = HealthCheck.all
     @namespaces = Namespace.all
     @orphans = @namespaces.find(app: 'nil')
+
+    begin
+      resp = Faraday.get 'http://127.0.0.1:8080/health/urls'
+      @urlchecks = JSON.parse(resp.body, { symbolize_names: true } )
+    rescue
+      @urlchecks = nil
+    end
 
     heading 'BMS Dashboard'
 

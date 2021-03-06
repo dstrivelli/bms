@@ -8,7 +8,7 @@ table class='table'
   tbody
     - events.each do |event|
       tr
-        td = display_time(event.lastTimestamp)
+        td.text-nowrap = display_time(event.lastTimestamp)
         - if event.involvedObject.nil?
           td = "&nbsp;"
         - else

@@ -48,7 +48,7 @@ module DisplayHelpers
   end
 
   def bootstrap_color_for(value)
-    value = value.to_sym
+    value = value.downcase.to_sym
     case value
     when :green, :success, :pass
       'success'
@@ -294,7 +294,7 @@ module DisplayHelpers
   def display_time(time)
     time = Time.parse(time) if time.is_a? String
     time = time.localtime if time.utc?
-    time.strftime('%B %e, %Y %l:%M:%P')
+    time.strftime('%m/%d/%Y %l:%M:%P')
   end
 
   def display_timestamp(timestamp)

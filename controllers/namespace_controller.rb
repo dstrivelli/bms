@@ -12,7 +12,12 @@ class NamespaceController < ApplicationController
 
     ns = params[:name]
 
-    @namespace = settings.k8core.get_namespace(ns)
+    begin
+      @namespace = settings.k8core.get_namespace(ns)
+    rescue Kubeclient::ResourceNotFoundError
+      @namespace = nil
+    end
+
     unless @namespace.nil?
       @configmaps = settings.k8core.get_config_maps(namespace: ns)
       @daemonsets = settings.k8extensions.get_daemon_sets(namespace: ns)
@@ -32,7 +37,7 @@ class NamespaceController < ApplicationController
 
     respond_to do |format|
       if @namespace.nil?
-        format.html 'No namespace found.'
+        format.html { slim :entitynotfound, locals: { kind: 'Namespace' } }
       else
         format.html { slim :namespace }
       end
