@@ -88,11 +88,11 @@ end
 
 desc "Push docker image to #{REMOTE_DOCKER}"
 task :push do
-  puts "Tagging bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}:#{BMS::VERSION}"
+  puts "Tagging bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}/bms:#{BMS::VERSION}"
   status = system("docker tag bms:#{BMS::VERSION} #{REMOTE_DOCKER}/bms:#{BMS::VERSION}")
   raise unless status
 
-  puts "Pushing bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}:#{BMS::VERSION}"
+  puts "Pushing bms:#{BMS::VERSION} -> #{REMOTE_DOCKER}/bms:#{BMS::VERSION}"
   status = system("docker push #{REMOTE_DOCKER}/bms:#{BMS::VERSION}")
   if status
     puts 'Image successfully push!'

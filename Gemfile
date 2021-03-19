@@ -30,8 +30,9 @@ gem 'typhoeus', '~> 1.4'
 
 group :development do
   gem 'lp'                  # Easy output of Objects in yaml
-  gem 'pry'                 # Debugging
+  gem 'pry', '< 0.14.0'     # Debugging
   gem 'pry-byebug'
+  gem 'pry-doc'
   gem 'pry-remote'
   gem 'pry-rescue'
 end

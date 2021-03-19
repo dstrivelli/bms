@@ -7,6 +7,7 @@ require 'ohm'
   Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }
 end
 
+# Filter out any stacktrace that is not within the confines of our app
 Pry.config.exception_handler = proc do |output, exception, _pry_|
   output.puts exception.to_s
   filtered = exception.backtrace.select { |line| line.include? 'bms' }
