@@ -1,6 +1,6 @@
 div class='row'
   div class='col-2'
-    h2 class='text-center' K8
+    H2 class='text-center' K8
     table class='table'
       thead
         tr
@@ -8,19 +8,18 @@ div class='row'
           th Status
       tbody
         - @nodes.each do |node|
-          - light, text = light_for_node(node)
           tr
+            td = display_value('hostname', node[:name].split('.').first)
             td
-              a href=link_for(:node, display_value('hostname', node.hostname))
-                = display_value('hostname', node.hostname)
-            td
-              span> class="badge badge-#{bootstrap_color_for(light)}"
-                = node.conditions.join("\n")
-  div class='col'
-    h2 class='text-center' Apps
-    - if @apps.size > 0
+              span> id="node-#{node[:name]}" class="badge badge-#{bootstrap_color_for(node[:healthy])}" title=join_report_errors(node[:report]) data-healthy=node[:healthy]
+                = node[:healthy] ? 'Ready' : 'Not Ready'
+  div class='col-8'
+    h2 class='text-center'
+      'Apps
+      span> id='ns-live-badge' class="ms-2 badge badge-danger" Live
+    - if @tenants.size > 0
       div class='row'
-        - @apps.each_slice((@apps.size / 2.0).ceil).with_index do |slice, idx|
+        - @tenants.each_slice((@tenants.size / 2.0).ceil).with_index do |slice, idx|
           div class='col-6'
             table class='table'
               thead
@@ -28,27 +27,14 @@ div class='row'
                   th App
                   th Environments
               tbody
-                - slice.each do |app|
-                  tr
-                    td = app
+                - slice.each do |tenant, namespaces|
+                  tr id="tenant-#{tenant}"
+                    td.text-nowrap = tenant
                     td
-                      - %w[prod prodtest preprod perf cola].each do |env|
-                        - if (namespace = Namespace.with(:name, "#{app}-#{env}"))
-                          - light, text = light_for_namespace(namespace)
-                          a href=link_for(:namespace, namespace.name)
-                            span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
-                              = env.titleize
-                        - else
-                          span> class="badge badge-dark badge-pill"
-                - if idx == 1 and @orphans.size > 0
-                  tr
-                    td platform
-                    td
-                      - @orphans.each do |namespace|
-                        - light, text = light_for_namespace(namespace)
-                        a href=link_for(:namespace, namespace.name)
-                          span> class="badge badge-#{bootstrap_color_for(light)}" title=text.join("\n")
-                            = namespace.name
+                      - namespaces.each do |ns|
+                        a href=link_for(:namespace, ns[:name])
+                          span> id="namespace-#{ns[:name]}" class="badge badge-#{bootstrap_color_for(ns[:healthy])}" title=join_report_errors(ns[:report]) data-healthy=ns[:healthy]
+                            = ns[:name].delete_prefix(tenant + '-')
   div class='col-2'
     h2 class='text-center' URL Checks
     table class='table'
@@ -67,3 +53,24 @@ div class='row'
               - else
                 span> class="badge badge-danger" title=check[:result][:error]
                   'ERROR
+div id='logModal' class='modal fade bottom' tabindex='-1' role='dialog' aria-labelledby='logModalLabel' aria-hidden='true'
+  div class='modal-dialog modal-frame modal-bottom' role='document'
+    div class='modal-content'
+      div class='modal-header'
+        h5 id='logModalLabel' class='modal-title'
+          a onclick="$('#logModalText').text('');"
+            i> class='fas fa-trash-alt' title='Clear log'
+          'Log
+        button class='close' type='button' data-dismiss='modal' aria-label='Close'
+          span aria-hidden='true' &times;
+      div class='modal-body'
+        p id='logModalText' class='overflow-auto' style='max-height: 250px;'
+div id='log' class='fixed-action-btn' style='bottom: 0px; right: 0px;'
+  a id='btn-notifications' class='btn-floating btn-sm btn-primary' onclick='enableNotifications();'
+    i id='icon-notifications' class='fas fa-bell-slash' title='Notifications'
+  a id='btn-log' class='btn-floating btn-sm btn-dark' data-toggle='modal' data-target='#logModal'
+    i id='icon-log' class='fas fa-sticky-note' title='Log'
+javascript:
+  $(document).ready(function() {
+    startMonitor(new URL('/health/namespaces/ws', '#{@api_url}'), $('#ns-live-badge'))
+  });

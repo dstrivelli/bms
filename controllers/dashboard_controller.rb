@@ -2,30 +2,61 @@
 
 require 'faraday'
 require 'json'
+require 'uri'
 
 require 'application_controller'
 
 # Controller to handle health reports
 class DashboardController < ApplicationController
   get '/' do
-    @nodes = Node.all
-    @apps = Namespace.apps
-    @healthchecks = HealthCheck.all
-    @namespaces = Namespace.all
-    @orphans = @namespaces.find(app: 'nil')
+    @api_url = URI(Settings.api.external)
+    @api_url.scheme = @api_url.scheme == 'https' ? 'wss' : 'ws'
+
+    conn = Faraday.new(Settings.api.internal, request: { timeout: 5 })
 
     begin
-      resp = Faraday.get 'http://127.0.0.1:8080/health/urls'
-      @urlchecks = JSON.parse(resp.body, { symbolize_names: true } )
-    rescue
-      @urlchecks = nil
+      resp = conn.get('/nodes')
+      @nodes = JSON.parse(resp.body, { symbolize_names: true })
+    rescue # rubocop:disable Style/RescueStandardError
+      @nodes = []
     end
 
-    heading 'BMS Dashboard'
+    begin
+      resp = conn.get('/namespaces')
+      namespaces = JSON.parse(resp.body, { symbolize_names: true })
+      # Take the list of namespaces and sort them into grouped by tenant
+      @tenants = namespaces.each_with_object({}) do |ns, tenants|
+        name = ns[:tenant].to_s
+        if tenants[name].nil?
+          tenants[name] = [ns]
+        else
+          tenants[name] << ns
+        end
+      end
+      # Sort that list
+      @tenants = @tenants.sort.to_h
+    rescue # rubocop:disable Style/RescueStandardError
+      @tenants = []
+    end
+
+    begin
+      resp = conn.get('/health/urls')
+      @urlchecks = JSON.parse(resp.body, { symbolize_names: true })
+    rescue # rubocop:disable Style/RescueStandardError
+      @urlchecks = []
+    end
+
+    # heading 'BMS Dashboard'
 
     respond_to do |format|
       format.html { slim :dashboard }
-      format.json { @payload.to_json }
+      format.json do
+        {
+          nodes: @nodes,
+          tenants: @tenants,
+          urlchecks: @urlchecks
+        }.to_json
+      end
     end
   end
 end

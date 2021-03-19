@@ -50,11 +50,11 @@ module DisplayHelpers
   def bootstrap_color_for(value)
     value = value.downcase.to_sym
     case value
-    when :green, :success, :pass
+    when :green, :success, :pass, :true # rubocop:disable Lint/BooleanSymbol
       'success'
     when :alert, :warning, :yellow, :warn
       'warning'
-    when :danger, :error, :red, :fail
+    when :danger, :error, :red, :fail, :false # rubocop:disable Lint/BooleanSymbol
       'danger'
     else
       value.to_s
@@ -285,6 +285,12 @@ module DisplayHelpers
     else
       ''
     end
+  end
+
+  def join_report_errors(report, sep: "\n")
+    report[:errors].join(sep)
+  rescue # rubocop:disable Style/RescueStandardError
+    ''
   end
 
   def display(value)

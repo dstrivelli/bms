@@ -36,6 +36,7 @@ class ApplicationController < Sinatra::Base
     'popper.min.js',
     'bootstrap.min.js',
     'mdb.min.js',
+    'reconnecting-websocket.min.js',
     'bms.js'
   ]
   set :title, 'BMS'
