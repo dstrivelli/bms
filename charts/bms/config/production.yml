@@ -1,7 +1,8 @@
 api:
   internal: http://bms-api.bms.svc:8080
   external: https://bms-api.prod8.bip.va.gov
-log_level: info
+logging:
+  level: info
 email:
   approved:
     - '^.*@bah\.com$'

@@ -17,7 +17,8 @@ class DashboardController < ApplicationController
     begin
       resp = conn.get('/nodes')
       @nodes = JSON.parse(resp.body, { symbolize_names: true })
-    rescue # rubocop:disable Style/RescueStandardError
+    rescue => e # rubocop:disable Style/RescueStandardError
+      logger.error e
       @nodes = []
     end
 
@@ -35,14 +36,16 @@ class DashboardController < ApplicationController
       end
       # Sort that list
       @tenants = @tenants.sort.to_h
-    rescue # rubocop:disable Style/RescueStandardError
+    rescue => e # rubocop:disable Style/RescueStandardError
+      logger.error e
       @tenants = []
     end
 
     begin
       resp = conn.get('/health/urls')
       @urlchecks = JSON.parse(resp.body, { symbolize_names: true })
-    rescue # rubocop:disable Style/RescueStandardError
+    rescue => e # rubocop:disable Style/RescueStandardError
+      logger.error e
       @urlchecks = []
     end
 

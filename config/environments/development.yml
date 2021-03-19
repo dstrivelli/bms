@@ -6,7 +6,10 @@ api_local: &local
   internal: http://localhost:8080
   external: http://localhost:8080
 api: *remote
-log_level: debug
+logging:
+  layout: json
+  format_as: :json
+  level: debug
 url_options: &url_defaults
   headers:
     Cookie: "<%= File.read(File.expand_path('local/_oauth2_proxy', __dir__)).chomp %>"

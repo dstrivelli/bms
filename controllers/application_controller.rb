@@ -3,8 +3,10 @@
 require 'application_helpers'
 require 'config'
 require 'display_helpers'
+require 'logging'
 require 'sassc'
 require 'sinatra/base'
+require 'sinatra/custom_logger'
 require 'sinatra/flash'
 require 'sinatra/param'
 require 'sinatra/respond_with'
@@ -25,12 +27,15 @@ class ApplicationController < Sinatra::Base
 
   # helpers extend the Request context
   helpers Sinatra::Param
+  helpers Sinatra::CustomLogger
   helpers ApplicationHelpers
   helpers DisplayHelpers
 
   # settings
   enable :logging
   enable :sessions
+
+  set :logger, Logging::Logger.new('sinatra')
   set :javascripts, [
     'jquery.min.js',
     'popper.min.js',

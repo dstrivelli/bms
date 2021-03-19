@@ -1,7 +1,9 @@
 api:
   internal: http://bms-api.svc:8080
   external: https://bms-api.prod8.bip.va.gov
-log_level: warn
+logging:
+  layout: json
+  level: warn
 reports:
   every: 900 # 15m
   purge_older_than: 86400 # 24h

@@ -32,8 +32,20 @@ Config.load_and_set_settings(
 )
 
 # Initialize logging
-Logging.logger.root.appenders = Logging.appenders.stdout # (layout: Logging.layouts.basic)
-Logging.logger.root.level = Settings&.log_level || :warn
+layout = case Settings&.logging&.layout
+         when 'json'
+           Logging.layouts.json
+         when 'yaml'
+           Logging.layouts.yaml
+         else
+           Logging.layouts.basic
+         end
+# Setup root logger
+Logging.logger.root.appenders = Logging.appenders.stdout(layout: layout)
+Logging.logger.root.level = Settings&.logging&.level || :warn
+# format_as is how Logging translates ruby objects to string in log
+Logging.format_as Settings&.logging&.format_as || :inspect
+
 # Example of how to fine tune logging
 # Logging.logger['BMS::Worker'].level = :info
 
