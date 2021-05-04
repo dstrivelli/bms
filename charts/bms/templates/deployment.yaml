@@ -43,7 +43,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
         - name: stunnel
-          image: zanloy/aws-redis-stunnel
+          image: container-registry.prod8.bip.va.gov/bip/aws-redis-stunnel:latest
           imagePullPolicy: Always
           env:
             - name: STUNNEL_CONNECT

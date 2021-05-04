@@ -19,7 +19,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: curl
-            image: zanloy/alpine-va:1.0.1
+            image: container-registry.prod8.bip.va.gov/bip/alpine-va:3.13.3
             imagePullPolicy: IfNotPresent
             command: ['bash', '-c', 'curl -sS --fail -d "id=latest" {{ include "bms.emailurl" $dot | quote }}']
 {{- end }}
