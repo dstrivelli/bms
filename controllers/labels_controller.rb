@@ -5,7 +5,6 @@ require 'json'
 require 'sinatra/json'
 
 require 'application_controller'
-require 'nexus_repo'
 
 # Controller for Labels
 class LabelsController < ApplicationController

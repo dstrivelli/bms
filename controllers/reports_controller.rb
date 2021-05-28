@@ -7,19 +7,36 @@ require 'roadie'
 require 'application_controller'
 require 'display_helpers'
 require 'email_helpers'
+require 'report_helpers'
 
 # Controller to handle health reports
 class ReportsController < ApplicationController
+  helpers ApplicationHelpers
   helpers EmailHelpers
+  helpers ReportHelpers
 
   get '/' do
-    redirect '/reports/latest'
+    begin
+      @report = get_report()
+    rescue => e # rubocop: disable Style/RescueStandardError
+      logger.error e
+      return "There was an error while trying to generate report: #{e}"
+    end
+
+    heading 'BMS Health Report'
+    js 'report.js'
+
+    respond_to do |format|
+      format.html { slim :tabbed_report }
+      format.json do
+        @report.to_json
+      end
+    end
   end
 
   post '/email' do
     # Validation
     params do
-      required('id')
       optional('to').value(:string)
       optional('cc').value(:string)
     end
@@ -44,28 +61,14 @@ class ReportsController < ApplicationController
       return slim :_alert, locals: { type: :error, msg: email_approvals[:reason] }, layout: nil
     end
 
-    # Pull the report. There are 3 scenarios here.
-    # 1. :id is valid timestamp
-    # 2. :id is 'latest' or 'new' (TODO: implement new)
-    # 3. :id is invalid timestamp
-
-    # NTS: This is only a case to add 'new' later.
-    case # rubocop:disable Style/EmptyCaseCondition
-    when (report = Report.find(timestamp: params[:id])&.first)
-      # Scenario #1
-      @report = report
-    when params[:id] == 'latest'
-      # Scenario #2
-      @report = Report.latest.first
-    end
+    @report = get_report()
 
     unless @report
-      # Scenario #3
       status 404
-      return slim :_alert, locals: { type: :error, msg: 'Email failed. Invalid report id.' }, layout: nil
+      return slim :_alert, locals: { type: :error, msg: 'Email failed. Failed to fetch report from api server.' }, layout: nil
     end
 
-    subject = "[BMS] Snapshot Report - #{display_timestamp(@report.timestamp)}"
+    subject = "[BMS] Snapshot Report - #{display_time(@report[:date])}"
 
     # Process html body
     html = Roadie::Document.new(slim(:report, layout: :layout_email))
@@ -97,36 +100,5 @@ class ReportsController < ApplicationController
     else
       slim :_alert, locals: { type: :notice, msg: 'Email sent' }, layout: nil
     end
-  end
-
-  post '/reload' do
-    Process.kill :SIGHUP, worker_pid
-    'Reloaded!'
-  rescue Errno::ESRCH
-    'Error!'
-  end
-
-  get %r{/([1-9][0-9]*|latest)} do
-    timestamp = params['captures'].first
-    # TODO: Validate input
-    latest = Report.latest.first
-    return slim 'p There are 0 reports found in the database.' if latest.nil?
-
-    timestamp = latest.timestamp if timestamp == 'latest'
-    if (@report = Report.find(timestamp: timestamp).first)
-      heading 'BMS Health Report'
-      caption display_timestamp(@report.timestamp)
-      slim :tabbed_report
-    else
-      slim 'p No result found.'
-    end
-  end
-
-  get '/list' do
-    @reports = Report.all
-
-    heading 'BMS Health Reports'
-
-    slim :reports
   end
 end

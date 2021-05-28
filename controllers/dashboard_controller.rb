@@ -15,7 +15,7 @@ class DashboardController < ApplicationController
     conn = Faraday.new(Settings.api.internal, request: { timeout: 5 })
 
     begin
-      resp = conn.get('/nodes')
+      resp = conn.get('/health/nodes')
       @nodes = JSON.parse(resp.body, { symbolize_names: true })
     rescue => e # rubocop:disable Style/RescueStandardError
       logger.error e
@@ -23,7 +23,7 @@ class DashboardController < ApplicationController
     end
 
     begin
-      resp = conn.get('/namespaces')
+      resp = conn.get('/health/namespaces')
       namespaces = JSON.parse(resp.body, { symbolize_names: true })
       # Take the list of namespaces and sort them into grouped by tenant
       @tenants = namespaces.each_with_object({}) do |ns, tenants|
@@ -36,6 +36,9 @@ class DashboardController < ApplicationController
       end
       # Sort that list
       @tenants = @tenants.sort.to_h
+      @tenants.each do |k, v|
+        @tenants[k] = v.sort_by{ |env| env[:name] }
+      end
     rescue => e # rubocop:disable Style/RescueStandardError
       logger.error e
       @tenants = []

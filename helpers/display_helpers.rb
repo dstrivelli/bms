@@ -52,7 +52,7 @@ module DisplayHelpers
     case value
     when :green, :success, :pass, :true # rubocop:disable Lint/BooleanSymbol
       'success'
-    when :alert, :warning, :yellow, :warn
+    when :alert, :warning, :yellow, :warn, :unknown
       'warning'
     when :danger, :error, :red, :fail, :false # rubocop:disable Lint/BooleanSymbol
       'danger'
@@ -264,6 +264,19 @@ module DisplayHelpers
     "#{ready}/#{desired}"
   end
 
+  def display_healthy_string(healthy)
+    case healthy.downcase
+    when 'true'
+      'Healthy'
+    when 'false'
+      'Unhealthy'
+    when 'unknown'
+      'Unknown'
+    else
+      'ERROR'
+    end
+  end
+
   def count_restarts(pod)
     restarts = 0
 
@@ -287,8 +300,8 @@ module DisplayHelpers
     end
   end
 
-  def join_report_errors(report, sep: "\n")
-    report[:errors].join(sep)
+  def join_errors(obj, sep: "\n")
+    obj[:errors].join(sep)
   rescue # rubocop:disable Style/RescueStandardError
     ''
   end
@@ -300,7 +313,7 @@ module DisplayHelpers
   def display_time(time)
     time = Time.parse(time) if time.is_a? String
     time = time.localtime if time.utc?
-    time.strftime('%m/%d/%Y %l:%M:%P')
+    time.strftime('%m/%d/%Y %l:%M%P')
   end
 
   def display_timestamp(timestamp)

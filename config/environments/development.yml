@@ -1,11 +1,10 @@
-#api: https://bms-api.prod8.bip.va.gov
 api_remote: &remote
   internal: https://bms-api.prod8.bip.va.gov
   external: https://bms-api.prod8.bip.va.gov
 api_local: &local
   internal: http://localhost:8080
   external: http://localhost:8080
-api: *remote
+api: *local
 logging:
   layout: json
   format_as: :json

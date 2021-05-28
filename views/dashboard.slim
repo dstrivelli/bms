@@ -11,7 +11,7 @@ div class='row'
           tr
             td = display_value('hostname', node[:name].split('.').first)
             td
-              span> id="node-#{node[:name]}" class="badge badge-#{bootstrap_color_for(node[:healthy])}" title=join_report_errors(node[:report]) data-healthy=node[:healthy]
+              span> id="node-#{node[:name]}" class="badge badge-#{bootstrap_color_for(node[:healthy])}" title=join_errors(node) data-healthy=node[:healthy]
                 = node[:healthy] ? 'Ready' : 'Not Ready'
   div class='col-8'
     h2 class='text-center'
@@ -33,7 +33,7 @@ div class='row'
                     td
                       - namespaces.each do |ns|
                         a href=link_for(:namespace, ns[:name])
-                          span> id="namespace-#{ns[:name]}" class="badge badge-#{bootstrap_color_for(ns[:healthy])}" title=join_report_errors(ns[:report]) data-healthy=ns[:healthy]
+                          span> id="namespace-#{ns[:name]}" class="badge badge-#{bootstrap_color_for(ns[:healthy])}" title=join_errors(ns) data-healthy=ns[:healthy]
                             = ns[:name].delete_prefix(tenant + '-')
   div class='col-2'
     h2 class='text-center' URL Checks
@@ -41,18 +41,14 @@ div class='row'
       thead
         tr
           th Name
-          th Result
+          th Healthy
       tbody
         - @urlchecks.each do |check|
           tr
             td = check[:name]
             td
-              - if check[:result][:error].nil?
-                span> class="badge badge-#{bootstrap_color_for(check[:result][:light])}"
-                  = check[:result][:status]
-              - else
-                span> class="badge badge-danger" title=check[:result][:error]
-                  'ERROR
+              span> id="url-#{check[:name]}" class="badge badge-#{bootstrap_color_for(check[:healthy])}" title=join_errors(check) data-healthy=check[:healthy]
+                = check[:healthy]
 div id='logModal' class='modal fade bottom' tabindex='-1' role='dialog' aria-labelledby='logModalLabel' aria-hidden='true'
   div class='modal-dialog modal-frame modal-bottom' role='document'
     div class='modal-content'
@@ -65,12 +61,12 @@ div id='logModal' class='modal fade bottom' tabindex='-1' role='dialog' aria-lab
           span aria-hidden='true' &times;
       div class='modal-body'
         p id='logModalText' class='overflow-auto' style='max-height: 250px;'
-div id='log' class='fixed-action-btn' style='bottom: 0px; right: 0px;'
+div id='log' class='fixed-action-btn' style='bottom: 0px; right: 0px; height: 80px;'
   a id='btn-notifications' class='btn-floating btn-sm btn-primary' onclick='enableNotifications();'
     i id='icon-notifications' class='fas fa-bell-slash' title='Notifications'
   a id='btn-log' class='btn-floating btn-sm btn-dark' data-toggle='modal' data-target='#logModal'
     i id='icon-log' class='fas fa-sticky-note' title='Log'
 javascript:
   $(document).ready(function() {
-    startMonitor(new URL('/health/namespaces/ws', '#{@api_url}'), $('#ns-live-badge'))
+    startMonitor(new URL('/health/ws', '#{@api_url}'), $('#ns-live-badge'))
   });

@@ -1,15 +1,19 @@
+- unless @report[:errors].empty?
+  ul id='errors'
+    - @report[:errors].each do |error|
+      li = error
 div id='nodes_table' class='mw-100'
   h2 Kubernetes Nodes
-  == slim :_table, locals: { table: @report.nodes, no_progress_bars: true }
+  == slim :_table, locals: { table: @report[:nodes], no_progress_bars: true }
 hr
 div id='pods_table' class='mw-100'
   h2 Unhealthy Pods
-  == slim :_table, locals: { table: @report.unhealthy_pods }
+  == slim :_table, locals: { table: @report[:unhealthy_pods] }
 hr
 div id='restarts_table' class='mw-100'
   h2 Pod Restarts
-  == slim :_table, locals: { table: @report.restarts }
+  == slim :_table, locals: { table: @report[:restarts] }
 hr
 div id='uris_table' class='mw-100'
-  h2 URIs
-  == slim :_table, locals: { table: @report.health_checks }
+  h2 URL Checks
+  == slim :_table, locals: { table: @report[:urlchecks] }

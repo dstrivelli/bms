@@ -12,7 +12,6 @@ require 'sinatra/param'
 require 'sinatra/respond_with'
 require 'sinatra/validation'
 
-require 'report'
 require_relative '../connectors/kubectl'
 
 # Base class for all Controllers
@@ -60,10 +59,9 @@ class ApplicationController < Sinatra::Base
   end
 
   before '/*' do
-    @latest_reports = Report.latest_timestamps
     @active_app = self.class.name.chomp('Controller').downcase
 
-    # To have the ability to change response type with an extension
+    # To change response type with an extension
     # eg: http://example.org/record.json => Accept: application/json
     if request.url.match(/\.json$/)
       request.accept.unshift('application/json')
@@ -81,25 +79,9 @@ class ApplicationController < Sinatra::Base
 
   get '/health' do
     return '{ "status": "green" }'
-    # health = { status: 'green' }
-    # # Check database status
-    # health[:latest_report] = Report.latest.first.timestamp
-
-    # health[:database] = if port_open?(6379)
-    #                       'green'
-    #                     else
-    #                       'red'
-    #                     end
-    # case health[:status]
-    # when 'yellow'
-    #   status 501
-    # when 'red'
-    #   status 503
-    # end
-    # JSON.generate(health)
   end
 
   not_found do
-    "I don't know what you want."
+    'The requested page was not found.'
   end
 end

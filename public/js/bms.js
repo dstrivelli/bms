@@ -135,7 +135,7 @@ function handleHealthEvent(event) {
   // Get the target elem
   targetName = '#' + obj.kind + '-' + obj.name;
   target = $(targetName);
-  if (target == null) {
+  if (target.length == 0) {
     console.log('The object [' + targetName + '] could not be found.');
     return;
   }
@@ -160,6 +160,11 @@ function handleHealthEvent(event) {
       logitem = '[' + obj.kind + '] ' + obj.name + ' has gone UNHEALTHY.';
       icon = 'healthy-false.png';
       break;
+    case 'Unknown':
+      newClass = 'badge-warning';
+      logitem = '[' + obj.kind + '] ' + obj.name + ' has gone UNKNOWN.';
+      icon = 'healthy-false.png';
+      break;
     default:
       newClass = 'badge-warning';
   }
@@ -172,49 +177,11 @@ function handleHealthEvent(event) {
   // Change elem attr, class, and text
   target.attr('data-healthy', obj.healthy);
   changeBadgeClass(target, newClass);
+  if (obj.kind == 'url') { target.text(obj.healthy) }
   target.attr('title', titleText);
 
   // Send log event
   if (logitem != '') {
     log(logitem, { icon: icon, notify: true });
   }
-}
-
-/* REPORT EMAIL */
-// TODO: Move this to a separate js file
-function sendEmail(id) {
-  var data = { id: id };
-  var to = $('#emailModalAddress').val();
-  if (to) {
-    data['to'] = to;
-  }
-
-  hideAndClearEmailModal();
-
-  $.ajax({
-    type: 'POST',
-    dataType: 'html',
-    url: '/reports/email',
-    data: data,
-    success: processEmailSuccess,
-    error: processEmailError
-  });
-}
-
-function hideAndClearEmailModal() {
-  console.log('executing hideAndClearEmailModal');
-  $('#emailModal').modal('hide');
-  $('#emailModalAddress').val('');
-}
-
-function processEmailSuccess(data) {
-  console.log('executing processEmailsuccess');
-  console.log(data);
-  document.getElementById('flashes').innerHTML = data;
-}
-
-function processEmailError(xhr, status, error) {
-  console.log('executing processEmailError');
-  console.log(xhr);
-  document.getElementById('flashes').innerHTML = xhr.responseText;
 }

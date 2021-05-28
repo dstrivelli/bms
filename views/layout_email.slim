@@ -7,5 +7,5 @@ html lang='en'
     link rel='stylesheet' href='/css/bootstrap.min.css'
     link rel='stylesheet' href='/css/mdb.min.css'
   body
-    h1 = "BMS Health Report for #{display_timestamp(@report.timestamp)}"
+    h1 = "BMS Health Report for #{display_time(@report[:date])}"
     == yield

@@ -14,10 +14,10 @@
             - if elem.has_key? col
               - v = elem[col]
             - else
-              - v = '#ERR' unless elem.has_key? col
+              - v = ''
             - v = v.join(', ') if v.is_a? Array
             - colour = ''
-            - if col.to_s.end_with? '_percent'
+            - if col.to_s.end_with?('_percent', '_percentage')
               - v = parse_percentage(v)
               - unless defined?(no_progress_bars)
                 td

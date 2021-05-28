@@ -178,31 +178,10 @@ module ApplicationHelpers
     end
   end
 
-  def port_open?(ip, port, seconds = 1)
-    Timeout.timeout(seconds) do
-      TCPSocket.new(ip, port).close
-    end
-    true
-  rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-    false
-  rescue Timeout::Error
-    false
+  def api_fetch(uri)
+    conn = Faraday.new(Settings.api.internal, request: { timeout: 5 })
+    resp = conn.get(uri)
+    JSON.parse(resp.body, { symbolize_names: true })
   end
-
-  def worker_pid
-    # Validate pid file exists
-    pid_file = Settings&.worker&.pid_file || '/tmp/bmw_worker.pid'
-    pid = File.read(pid_file).to_i
-    return nil if pid.zero?
-
-    # Validate process is still running
-    Process.getpgid(pid)
-    pid
-  rescue Errno::ENOENT, Errno::ESRCH
-    nil
-  end
-
-  def worker_running?
-    worker_pid ? true : false
-  end
+  module_function :api_fetch
 end

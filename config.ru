@@ -61,11 +61,11 @@ Mail.defaults do
 end
 
 # Configure redis
-redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
-Ohm.redis = Redic.new(redis_host)
+#redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
+#Ohm.redis = Redic.new(redis_host)
 
 # Load all our application requirements
-%w[connectors models helpers controllers].each do |dir|
+%w[connectors helpers controllers].each do |dir|
   $LOAD_PATH.unshift(File.expand_path(dir, __dir__))
   Dir.glob("./#{dir}/**/*.rb").sort.each { |file| require file }
 end
@@ -76,5 +76,5 @@ map('/deployments') { run DeploymentsController }
 map('/labels')      { run LabelsController }
 map('/nodes')       { run NodesController }
 map('/ns')          { run NamespaceController }
-map('/reports')     { run ReportsController }
+map('/report')      { run ReportsController }
 map('/')            { run ApplicationController }
