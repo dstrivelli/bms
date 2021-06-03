@@ -178,10 +178,11 @@ module ApplicationHelpers
     end
   end
 
+  module_function
+
   def api_fetch(uri)
     conn = Faraday.new(Settings.api.internal, request: { timeout: 5 })
     resp = conn.get(uri)
     JSON.parse(resp.body, { symbolize_names: true })
   end
-  module_function :api_fetch
 end

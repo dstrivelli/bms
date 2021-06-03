@@ -60,10 +60,6 @@ Mail.defaults do
   delivery_method manner, options
 end
 
-# Configure redis
-#redis_host = Settings&.redis || 'redis://127.0.0.1:6379'
-#Ohm.redis = Redic.new(redis_host)
-
 # Load all our application requirements
 %w[connectors helpers controllers].each do |dir|
   $LOAD_PATH.unshift(File.expand_path(dir, __dir__))

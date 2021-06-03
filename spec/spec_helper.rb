@@ -52,6 +52,3 @@ end
 
 # Load our testing support suite
 Dir.glob(File.expand_path('support/**/*.rb', __dir__)).sort.each { |file| require file }
-
-# Pull in database functions
-include TestDatabase # rubocop:disable Style/MixinUsage

@@ -17,7 +17,7 @@ class ReportsController < ApplicationController
 
   get '/' do
     begin
-      @report = get_report()
+      @report = get_report
     rescue => e # rubocop: disable Style/RescueStandardError
       logger.error e
       return "There was an error while trying to generate report: #{e}"
@@ -61,7 +61,7 @@ class ReportsController < ApplicationController
       return slim :_alert, locals: { type: :error, msg: email_approvals[:reason] }, layout: nil
     end
 
-    @report = get_report()
+    @report = get_report
 
     unless @report
       status 404

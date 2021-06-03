@@ -2,7 +2,6 @@
 
 require 'factory_bot'
 require 'ffaker'
-require 'ohm'
 
 require 'report'
 require 'health_check'

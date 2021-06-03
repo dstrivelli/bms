@@ -27,27 +27,21 @@ spec:
             - name: RACK_ENV
               value: production
           ports:
-            - containerPort: 5000
+            - containerPort: 9292
           volumeMounts:
             - name: config-file
               mountPath: /app/config/environments
           livenessProbe:
             tcpSocket:
-              port: 5000
+              port: 9292
             initialDelaySeconds: 10
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /health
-              port: 5000
+              port: 9292
             initialDelaySeconds: 10
             periodSeconds: 30
-        - name: stunnel
-          image: container-registry.prod8.bip.va.gov/bip/aws-redis-stunnel:latest
-          imagePullPolicy: Always
-          env:
-            - name: STUNNEL_CONNECT
-              value: "master.bms.wd8foa.usgw1.cache.amazonaws.com:6379"
       volumes:
         - name: config-file
           configMap:

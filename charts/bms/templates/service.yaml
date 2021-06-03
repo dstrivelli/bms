@@ -8,4 +8,4 @@ spec:
     app: {{ include "bms.name" . }}
   ports:
   - name: http
-    port: 5000
+    port: 9292

@@ -37,7 +37,7 @@ class DashboardController < ApplicationController
       # Sort that list
       @tenants = @tenants.sort.to_h
       @tenants.each do |k, v|
-        @tenants[k] = v.sort_by{ |env| env[:name] }
+        @tenants[k] = v.sort_by { |env| env[:name] }
       end
     rescue => e # rubocop:disable Style/RescueStandardError
       logger.error e

@@ -40,7 +40,7 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end -}}
 
 {{- define "bms.emailurl" -}}
-http://{{ include "bms.name" .}}:5000/reports/email
+http://{{ include "bms.name" .}}:9292/report/email
 {{- end -}}
 
 {{- define "bms.production.yml" -}}

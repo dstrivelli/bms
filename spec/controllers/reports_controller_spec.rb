@@ -5,20 +5,11 @@ require 'mail'
 
 require 'reports_controller'
 
-describe ReportsController do
+xdescribe ReportsController do
   let(:app) { ReportsController.new }
 
   before(:all) do
-    reset_db
     @report = create(:report)
-  end
-
-  context 'get /' do
-    let(:response) { get '/' }
-
-    it 'returns redirects to /reports/latest' do
-      expect(response).to redirect_to 'http://example.org/reports/latest'
-    end
   end
 
   context 'get /email' do

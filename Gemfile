@@ -14,8 +14,6 @@ gem 'json'
 gem 'kubeclient'            # Gather information from Kubernetes
 gem 'logging'
 gem 'mail'                  # Send emails
-gem 'ohm'                   # Use Ohm for Redis backend
-gem 'ohm-contrib'           # Helpful additions to Ohm
 gem 'prometheus-api-client' # Gather information from Prometheus
 gem 'roadie'                # In-line CSS for emails
 gem 'sassc'                 # SASS Compiler

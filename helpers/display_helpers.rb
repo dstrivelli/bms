@@ -157,7 +157,6 @@ module DisplayHelpers
     [light, text]
   end
 
-  # rubocop:disable Metrics/PerceivedComplexity
   def light_for(kind, obj)
     # Setup result object
     result = OpenStruct.new
@@ -220,7 +219,6 @@ module DisplayHelpers
 
     result
   end
-  # rubocop:enable Metrics/PerceivedComplexity
 
   def image_for(kind, obj)
     case kind.downcase.to_sym

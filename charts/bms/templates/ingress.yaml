@@ -23,5 +23,5 @@ spec:
           - path: /
             backend:
               serviceName: {{ include "bms.name" . }}
-              servicePort: 5000
+              servicePort: 9292
 {{- end }}

@@ -4,7 +4,7 @@ api_remote: &remote
 api_local: &local
   internal: http://localhost:8080
   external: http://localhost:8080
-api: *local
+api: *remote
 logging:
   layout: json
   format_as: :json

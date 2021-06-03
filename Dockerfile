@@ -34,6 +34,7 @@ RUN gem install bundler foreman && \
 
 # Copy app files in
 COPY . /app
-EXPOSE 5000
+EXPOSE 9292
 
-CMD ["foreman", "start"]
+#CMD ["foreman", "start"]
+CMD ["rackup"]

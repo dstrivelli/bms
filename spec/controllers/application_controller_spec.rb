@@ -29,9 +29,5 @@ describe ApplicationController do
     it 'returns status 404' do
       expect(response.status).to eql 404
     end
-
-    it 'says something funny' do
-      expect(response.body).to include("I don't know what you want.")
-    end
   end
 end
