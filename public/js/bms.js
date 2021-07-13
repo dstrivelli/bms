@@ -12,11 +12,20 @@ $(document).ready(function() {
       window.location.hash = hash;
     });
   });
-
+    
+  loadLogsFromStorage();
   setBellIcon();
 });
 
 /* NOTIFICATIONS */
+function loadLogsFromStorage(){
+  // Grabs logs from localStorage and puts them into logger on load
+  elem = $('#logModalText');
+  if (elem == null) { return }
+  storedLogs = localStorage.getItem('logHTML');
+  if (storedLogs == null) { return }
+  else { elem.html(storedLogs); }
+}
 
 function setBellIcon() {
   target = $('#icon-notifications');
@@ -81,7 +90,10 @@ function log(text = '', { icon, notify } = { icon: null, notify: true }) {
 
   if (elem.text() != '') { text = '<br />' + text }
   elem.append(text);
-
+  
+  // After adding new item, send new HTML to localStorage
+  localStorage.setItem('logHTML', elem.html());
+  
   // Scroll log
   elem.scrollTop(elem[0].scrollHeight - elem[0].clientHeight);
 }
